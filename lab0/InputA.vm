@@ -1,7 +1,12 @@
-buy bread 3 4.5
-buy cheese 2 5.3
-cell cheese 15 5.7
-buy milk 4 6.2
-cell chocolate 7 10.2
-buy milk 7 3.2
-cell chocolate 2 5.5
+push static 0
+pop local 4
+gt
+push constant 7
+gt
+pop this 2
+push constant 3
+add
+push argument 1
+eq
+
+
