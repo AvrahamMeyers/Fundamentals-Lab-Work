@@ -3,155 +3,88 @@ package main
 import (
 	"fmt"
 	"os"
-	"strconv"
 	"strings"
 )
 
 var tar0 string = "tar0"
 
-/*Should print to the end of output file the following:
-
-command: add
-or
-command: sub
-or
-command: neg
-*/
-
-func handleAdd() string {
-	return "command: add\n"
-}
-
-func handleSub() string {
-	return "command: sub\n"
-}
-
-func handleNeg() string {
-	return "command: neg\n"
-}
-
-/*End Arithmetic*/
-
-/*Logic:
-Should print to the end of output file the following:
-
-command: eq
-or
-command: gt
-or
-command: lt
-
-After that it should print the current counter value and increment the counter. For example
-
-counter: 3
-*/
-
-func handleEq(cl int) string {
-	return "command: eq counter: " + strconv.Itoa(cl) + "\n"
-}
-
-func handleGt(cl int) string {
-	return "command: gt counter: " + strconv.Itoa(cl) + "\n"
-}
-
-func handleLt(cl int) string {
-	return "command: lt counter: " + strconv.Itoa(cl) + "\n"
-}
-
-/*END LOGIC*/
-/*
-Memory access:
-Should print to the end of output file the following:
-
-command: push segment: <s> index: <i>
-or
-command: pop segment: <s> index: <i>
-
-For example, for the input
-push static 2
-
-We should see in the file
-command: push segment: static index: 2
-
-*/
-func handlePush(segment string, index int) string {
-	return "command: push segment: " + segment + " index: " + strconv.Itoa(index) + "\n"
-}
-
-func handlePop(segment string, index int) string {
-	return "command: pop segment: " + segment + " index: " + strconv.Itoa(index) + "\n"
-}
-
-/*END MEMORY ACCESS*/
-
-func readfile() {
+func processFile(input_file_content string, output_file *os.File) {
 	var counter_logical int = 0
-	//open and read the file
-	data, err := os.ReadFile("inputA.vm")
-	if err != nil {
-		fmt.Print(err)
-	}
-	file, err := os.OpenFile(tar0+".asm", os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0644)
-	if err != nil {
-		fmt.Println("Error opening file:", err)
-		return
-	}
+
 	//fmt.Println(string(data))
-	datastring := string(data)
+	datastring := input_file_content
 
 	//split the text into lines
 	lines := strings.Split(datastring, "\n")
 
 	for _, line := range lines {
 		//split the line into an array(slice)
-		words := strings.Fields(line)
-		//todo: check if line is valid
+		str_to_add := Handle_line(line, &counter_logical)
 
-		//convert string to int
-		var str_to_add string
-		switch words[0] {
-		case "add":
-			str_to_add = handleAdd()
-		case "sub":
-			str_to_add = handleSub()
-		case "neg":
-			str_to_add = handleNeg()
-		case "eq":
-			counter_logical++
-			str_to_add = handleEq(counter_logical)
-		case "gt":
-			counter_logical++
-			str_to_add = handleGt(counter_logical)
-		case "lt":
-			counter_logical++
-			str_to_add = handleLt(counter_logical)
-		case "push":
-			index, err := strconv.Atoi(words[2])
-			if err != nil {
-				fmt.Println("Error converting string to integer:", err)
-				break
-			}
-			str_to_add = handlePush(words[1], index)
-		case "pop":
-			index, err := strconv.Atoi(words[2])
-			if err != nil {
-				fmt.Println("Error converting string to integer:", err)
-				break
-			}
-			str_to_add = handlePush(words[1], index)
-		default:
-			fmt.Println("Error: not correct line")
-		}
-		_, err = file.WriteString(str_to_add)
+		var err error
+		_, err = output_file.WriteString(str_to_add)
 		if err != nil {
 			fmt.Println("Error appending to file:", err)
 			return
 		}
 	}
+}
+
+func readFolderName() string {
+	var input string
+	fmt.Scanln(&input)
+	return input
+}
+
+func readFileNamesFromFolder(folder_name string) []string {
+	//read all file names in the folder
+
+	file_name_list := []string{}
+	file_names, err := os.ReadDir(folder_name)
+	if err != nil {
+		fmt.Println("Error reading directory:", err)
+		return file_name_list
+	}
+	for _, file := range file_names {
+		if file.Type().IsRegular() {
+			file_name_list = append(file_name_list, file.Name())
+		}
+	}
+	return file_name_list
+}
+
+func new_main() {
+	folder_name := readFolderName()
+	file_names := readFileNamesFromFolder(folder_name)
+
+	output_file, err := os.Create(tar0 + ".asm")
+	if err != nil {
+		fmt.Println("Error creating file:", err)
+		return
+	}
+
+	for _, file_name := range file_names {
+		file_path := folder_name + "/" + file_name
+		input_file, err := os.ReadFile(file_path)
+		if err != nil {
+			fmt.Println("Error opening file:", err)
+			return
+		}
+		file_title := strings.Split(file_name, ".")[0]
+
+		input_file_content := string(input_file)
+
+		processFile(input_file_content, output_file)
+
+		fmt.Println("End of input file: ", file_title)
+	}
+}
+
+func test_main() {
+	Test_handle_line()
 
 }
 
 func main() {
-
-	readfile()
+	test_main()
 }
