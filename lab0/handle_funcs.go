@@ -7,7 +7,9 @@ import (
 )
 
 func Test_handle_line() {
-	counter_logical := 0
+
+	var counter_logical int = 0
+
 	line := "add"
 	str_to_add := Handle_line(line, &counter_logical)
 	if str_to_add != "command: add\n" {
@@ -31,12 +33,12 @@ func Test_handle_line() {
 	line = "gt"
 	str_to_add = Handle_line(line, &counter_logical)
 	if str_to_add != "command: gt counter: 2\n" {
-		fmt.Println("Error: gt")
+		fmt.Println("Error: gt got:", str_to_add)
 	}
 	line = "lt"
 	str_to_add = Handle_line(line, &counter_logical)
 	if str_to_add != "command: lt counter: 3\n" {
-		fmt.Println("Error: lt")
+		fmt.Println("Error: lt got:", str_to_add)
 	}
 	line = "push constant 2"
 	str_to_add = Handle_line(line, &counter_logical)
@@ -46,7 +48,7 @@ func Test_handle_line() {
 	line = "pop constant 2"
 	str_to_add = Handle_line(line, &counter_logical)
 	if str_to_add != "command: pop segment: constant index: 2\n" {
-		fmt.Println("Error: pop constant 2")
+		fmt.Println("Error: pop constant 2\nexpected: pop constant 2\ngot:", str_to_add)
 	}
 }
 
@@ -86,10 +88,11 @@ func Handle_line(line string, counter_pointer *int) string {
 			fmt.Println("Error converting string to integer:", err)
 			break
 		}
-		str_to_add = handlePush(words[1], index)
+		str_to_add = handlePop(words[1], index)
 	default:
 		fmt.Println("Error: not correct line")
 	}
+	*counter_pointer = counter_logical
 	return str_to_add
 }
 
