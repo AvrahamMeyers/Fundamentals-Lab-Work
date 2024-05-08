@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"strconv"
 	"strings"
 )
 
@@ -18,15 +19,24 @@ func processFile(input_file_content string, output_file *os.File) {
 	lines := strings.Split(datastring, "\n")
 
 	for _, line := range lines {
-		//split the line into an array(slice)
-		str_to_add := Handle_line(line, &counter_logical)
+		words := strings.Fields(line)
+		if len(words) > 0 {
+			//split the line into an array(slice)
+			str_to_add := Handle_line(line, &counter_logical)
 
-		var err error
-		_, err = output_file.WriteString(str_to_add)
-		if err != nil {
-			fmt.Println("Error appending to file:", err)
-			return
+			var err error
+			_, err = output_file.WriteString(str_to_add)
+			if err != nil {
+				fmt.Println("Error appending to file:", err)
+				return
+			}
 		}
+	}
+	var err error
+	_, err = output_file.WriteString("counter: " + strconv.Itoa(counter_logical) + "\n")
+	if err != nil {
+		fmt.Println("Error appending to file:", err)
+		return
 	}
 }
 
@@ -64,6 +74,7 @@ func new_main() {
 	}
 
 	for _, file_name := range file_names {
+
 		file_path := folder_name + "/" + file_name
 		input_file, err := os.ReadFile(file_path)
 		if err != nil {
@@ -86,5 +97,5 @@ func test_main() {
 }
 
 func main() {
-	test_main()
+	new_main()
 }
