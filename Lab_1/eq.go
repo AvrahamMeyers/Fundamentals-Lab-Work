@@ -2,7 +2,7 @@ package main
 
 // true if x = y and false otherwise
 
-func eq(loc_x string, loc_y string, loc_jump string) string {
+func eq() string {
 	return "D = D - M\n"
 }
 
