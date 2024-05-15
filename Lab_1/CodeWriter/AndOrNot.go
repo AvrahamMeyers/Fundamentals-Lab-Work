@@ -1,6 +1,6 @@
 package CodeWriter
 
-func and() string {
+func And() string {
 	return "@sp\n" + // A = 0, the location of SP
 		"M=M-1\n" + // SP-- (Move stack pointer one down)
 		"A=M\n" + // A = SP (Save this pointer in A)
@@ -11,7 +11,7 @@ func and() string {
 
 }
 
-func or() string {
+func Or() string {
 	return "@sp\n" + // A = 0, the location of SP
 		"M=M-1\n" + // SP-- (Move stack pointer one down)
 		"A=M\n" + // A = SP (Save this pointer in A)
@@ -22,7 +22,7 @@ func or() string {
 
 }
 
-func not() string {
+func Not() string {
 	return "@sp\n" + // A = 0, the location of SP
 		"A=M-1\n" + // A = SP - 1 (address of the value at the top of the stack)
 		"M=!M\n" // M[A] = not M[A] (the value at the top of the stack)

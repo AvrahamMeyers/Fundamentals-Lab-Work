@@ -2,6 +2,8 @@ package Parser
 
 import (
 	"strings"
+
+	"../CodeWriter"
 )
 
 func Handle_line(line string, counter_pointer *int) string {
@@ -13,7 +15,7 @@ func Handle_line(line string, counter_pointer *int) string {
 	var str_to_add string
 	switch words[0] {
 	case "add":
-		str_to_add = CodeWriter.add()
+		str_to_add = CodeWriter.Add()
 		// case "sub":
 		// 	str_to_add = handleSub()
 		// case "neg":

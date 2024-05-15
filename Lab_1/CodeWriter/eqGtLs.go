@@ -2,7 +2,7 @@ package CodeWriter
 
 // true if x = y and false otherwise
 
-func eq() string {
+func Eq() string {
 	return "@sp\n" + //stack pointer.
 		"A=M\n" + //get the value of the top of the stack
 		"D=M\n" + // reg(D) = the value stored at the top of the stack
@@ -11,7 +11,7 @@ func eq() string {
 		"M=D\n" //load the value returned back to top of the stack
 }
 
-func gt() string {
+func Gt() string {
 	return "@sp\n" + //stack pointer.
 		"A=M\n" + //get the value of the top of the stack.
 		"D=M\n" + // reg(D) = the value stored at the top of the stack
@@ -19,7 +19,7 @@ func gt() string {
 		"D=M-D\n" + //might want to do M+D if allowed because x-y x is pushed first
 		"M=D\n" //load the value returned back to top of the stack
 }
-func ls() string {
+func Ls() string {
 	return "@sp\n" + //stack pointer.
 		"A=M\n" + //get the value of the top of the stack
 		"D=M\n" + // reg(D) = the value stored at the top of the stack

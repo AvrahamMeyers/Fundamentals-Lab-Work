@@ -1,7 +1,7 @@
 package CodeWriter
 
 //expected is just the number string return the commands @num  D=A
-func pushConstant(num string) string {
+func PushConstant(num string) string {
 	return "@" + num + "\n" + //set A = to number
 		"D=A\n" + //set D = to num
 		"@SP\n" + //set A = SP (0)

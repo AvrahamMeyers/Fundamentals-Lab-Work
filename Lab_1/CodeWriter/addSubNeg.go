@@ -1,6 +1,6 @@
 package CodeWriter
 
-func add() string {
+func Add() string {
 	return "@sp\n" + // A = 0, the location of SP
 		"M=M-1\n" + // SP-- (Move stack pointer one down)
 		"A=M\n" + // A = SP (Save this pointer in A)
@@ -10,7 +10,7 @@ func add() string {
 		"M=D+M\n" // M[A] = D + M[A] (the value at the top of the stack)
 }
 
-func sub() string {
+func Sub() string {
 	return "@sp\n" + // A = 0, the location of SP
 		"M=M-1\n" + // SP-- (Move stack pointer one down)
 		"A=M\n" + // A = SP (Save this pointer in A)
@@ -20,7 +20,7 @@ func sub() string {
 		"M=M-D\n" // M[A] = M[A] - D (the value at the top of the stack)
 }
 
-func neg() string {
+func Neg() string {
 	return "@sp\n" +
 		"A=M-1\n" +
 		"M=-M\n"
