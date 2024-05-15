@@ -19,7 +19,7 @@ func Gt() string {
 		"D=M-D\n" + //might want to do M+D if allowed because x-y x is pushed first
 		"M=D\n" //load the value returned back to top of the stack
 }
-func Ls() string {
+func Lt() string {
 	return "@sp\n" + //stack pointer.
 		"A=M\n" + //get the value of the top of the stack
 		"D=M\n" + // reg(D) = the value stored at the top of the stack
