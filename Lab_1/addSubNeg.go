@@ -1,10 +1,17 @@
 package main
 
+// func add() string {
+// 	return "@x \n" +
+// 		"D = A\n" +
+// 		"@y \n" +
+// 		"D = D + A\n"
+// }
+
 func add() string {
-	return "@x \n" +
-		"D = A\n" +
-		"@y \n" +
-		"D = D + A\n"
+	return "@sp \n" +
+		"D = M\n" +
+		"A = A - 1 \n" +
+		"MD = D + M\n"
 }
 
 func sub() string {
