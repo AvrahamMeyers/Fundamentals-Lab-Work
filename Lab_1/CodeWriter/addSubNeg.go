@@ -1,4 +1,4 @@
-package main
+package CodeWriter
 
 func add() string {
 	return "@sp\n" + // A = 0, the location of SP

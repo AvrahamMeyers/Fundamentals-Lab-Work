@@ -1,4 +1,4 @@
-package main
+package CodeWriter
 
 //expected is just the number string return the commands @num  D=A
 func pushConstant(num string) string {

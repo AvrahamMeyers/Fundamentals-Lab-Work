@@ -1,4 +1,4 @@
-package main
+package CodeWriter
 
 // true if x = y and false otherwise
 
