@@ -17,7 +17,7 @@ func sub() string {
 		"D=M\n" + // D = M[A] (the value at the top of the stack)
 		"@sp\n" + // A = 0, the location of SP
 		"A=M-1\n" + // A = M[A] - 1 (the location of the second of the stack)
-		"M=M-D\n" // M[A] = D + M[A] (the value at the top of the stack)
+		"M=M-D\n" // M[A] = M[A] - D (the value at the top of the stack)
 }
 
 func neg() string {
