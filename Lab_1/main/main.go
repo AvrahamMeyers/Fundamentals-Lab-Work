@@ -40,9 +40,10 @@ func processFile(input_file_content string, output_file *os.File, fileName strin
 	}
 }
 
-func readFolderName() string {
+func readFolderPath() string {
 	var input string
 	fmt.Scanln(&input)
+	//fmt.Println("Folder name is:", input)
 	return input
 }
 
@@ -66,8 +67,10 @@ func readFileNamesFromFolder(folder_name string) []string {
 }
 
 func new_main() {
-	folder_name := readFolderName()
-	file_names := readFileNamesFromFolder(folder_name)
+	folder_path := readFolderPath()
+	file_names := readFileNamesFromFolder(folder_path)
+
+	folder_name := strings.Split(folder_path, "/")[1]
 
 	output_file, err := os.Create(folder_name + ".asm")
 	if err != nil {
@@ -79,7 +82,7 @@ func new_main() {
 
 		file_title := strings.Split(file_name, ".")[0]
 
-		file_path := folder_name + "/" + file_name
+		file_path := folder_path + "/" + file_name
 		input_file, err := os.ReadFile(file_path)
 		if err != nil {
 			fmt.Println("Error opening file:", err)
