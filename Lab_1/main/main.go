@@ -59,7 +59,9 @@ func readFileNamesFromFolder(folder_name string) []string {
 	}
 	for _, file := range file_names {
 		if file.Type().IsRegular() {
-			file_name_list = append(file_name_list, file.Name())
+			if strings.Split(file.Name(), ".")[1] == "vm" {
+				file_name_list = append(file_name_list, file.Name())
+			}
 		}
 	}
 	return file_name_list
