@@ -6,7 +6,7 @@ import (
 	"strconv"
 	"strings"
 
-	"../Parser"
+	"github.com/AvrahamMeyers/Fundamentals-Lab-Work/Lab_1/Parser"
 )
 
 var tar0 string = "tar0"

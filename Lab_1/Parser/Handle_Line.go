@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"../CodeWriter"
+	"github.com/AvrahamMeyers/Fundamentals-Lab-Work/Lab_1/CodeWriter"
 )
 
 func Handle_line(line string, fileName string) string {
