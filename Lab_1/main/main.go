@@ -9,8 +9,6 @@ import (
 	"github.com/AvrahamMeyers/Fundamentals-Lab-Work/Lab_1/Parser"
 )
 
-var tar0 string = "tar0"
-
 func processFile(input_file_content string, output_file *os.File, fileName string) {
 	var counter_logical int = 0
 
