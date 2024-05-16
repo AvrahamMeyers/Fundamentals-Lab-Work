@@ -11,7 +11,7 @@ import (
 
 var tar0 string = "tar0"
 
-func processFile(input_file_content string, output_file *os.File) {
+func processFile(input_file_content string, output_file *os.File, fileName string) {
 	var counter_logical int = 0
 
 	//fmt.Println(string(data))
@@ -24,7 +24,7 @@ func processFile(input_file_content string, output_file *os.File) {
 		words := strings.Fields(line)
 		if len(words) > 0 {
 			//split the line into an array(slice)
-			str_to_add := Parser.Handle_line(line, &counter_logical)
+			str_to_add := Parser.Handle_line(line, fileName)
 
 			var err error
 			_, err = output_file.WriteString(str_to_add)
@@ -69,7 +69,7 @@ func new_main() {
 	folder_name := readFolderName()
 	file_names := readFileNamesFromFolder(folder_name)
 
-	output_file, err := os.Create(tar0 + ".asm")
+	output_file, err := os.Create(folder_name + ".asm")
 	if err != nil {
 		fmt.Println("Error creating file:", err)
 		return
@@ -77,17 +77,18 @@ func new_main() {
 
 	for _, file_name := range file_names {
 
+		file_title := strings.Split(file_name, ".")[0]
+
 		file_path := folder_name + "/" + file_name
 		input_file, err := os.ReadFile(file_path)
 		if err != nil {
 			fmt.Println("Error opening file:", err)
 			return
 		}
-		file_title := strings.Split(file_name, ".")[0]
 
 		input_file_content := string(input_file)
 
-		processFile(input_file_content, output_file)
+		processFile(input_file_content, output_file, file_title)
 
 		fmt.Println("End of input file: ", file_title)
 	}

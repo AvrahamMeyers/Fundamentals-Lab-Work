@@ -7,7 +7,7 @@ import (
 	"../CodeWriter"
 )
 
-func Handle_line(line string) string {
+func Handle_line(line string, fileName string) string {
 	words := strings.Fields(line)
 	//todo: check if line is valid
 
@@ -32,14 +32,14 @@ func Handle_line(line string) string {
 	case "not":
 		str_to_add = CodeWriter.Not()
 	case "push":
-		var str = handlePush(words[1], words[2])
+		var str = handlePush(words[1], words[2], fileName)
 		if str == "Error" {
 			fmt.Println("Error: not correct line")
 			break
 		}
 		str_to_add = str
 	case "pop":
-		var str = handlePop(words[1], words[2])
+		var str = handlePop(words[1], words[2], fileName)
 		if str == "Error" {
 			fmt.Println("Error: not correct line")
 			break
@@ -51,26 +51,25 @@ func Handle_line(line string) string {
 	return str_to_add
 }
 
-func handlePush(segment string, index string) string {
+func handlePush(segment string, index string, fileName string) string {
 	var str_to_add string
 	switch segment {
-	// case "argument":
-	// 	str_to_add = CodeWriter.PushArgument(index)
-	// case "local":
-	// 	str_to_add = CodeWriter.PushLocal(index)
-	// case "static":
-	// 	str_to_add = CodeWriter.PushStatic(index)
+	case "argument":
+		str_to_add = CodeWriter.PushArgument(index)
+	case "local":
+		str_to_add = CodeWriter.PushLocal(index)
+	case "static":
+		str_to_add = CodeWriter.PushStatic(index, fileName)
 	case "constant":
 		str_to_add = CodeWriter.PushConstant(index)
-
-	// case "this":
-	// 	str_to_add = CodeWriter.PushThis(index)
-	// case "that":
-	// 	str_to_add = CodeWriter.PushThat(index)
-	// case "temp":
-	// 	str_to_add = CodeWriter.PushTemp(index)
-	// case "pointer":
-	// 	str_to_add = CodeWriter.PushPointer(index)
+	case "this":
+		str_to_add = CodeWriter.PushThis(index)
+	case "that":
+		str_to_add = CodeWriter.PushThat(index)
+	case "temp":
+		str_to_add = CodeWriter.PushTemp(index)
+	case "pointer":
+		str_to_add = CodeWriter.PushPointer(index)
 
 	default:
 		str_to_add = "Error"
@@ -78,25 +77,25 @@ func handlePush(segment string, index string) string {
 	return str_to_add
 }
 
-func handlePop(segment string, index string) string {
+func handlePop(segment string, index string, fileName string) string {
 	var str_to_add string
 	switch segment {
-	// case "argument":
-	// 	str_to_add = CodeWriter.PopArgument(index)
-	// case "local":
-	// 	str_to_add = CodeWriter.PopLocal(index)
-	// case "static":
-	// 	str_to_add = CodeWriter.PopStatic(index)
-	// case "constant":
-	// 	str_to_add = CodeWriter.PopConstant(index)
-	// case "this":
-	// 	str_to_add = CodeWriter.PopThis(index)
-	// case "that":
-	// 	str_to_add = CodeWriter.PopThat(index)
-	// case "temp":
-	// 	str_to_add = CodeWriter.PopTemp(index)
-	// case "pointer":
-	// 	str_to_add = CodeWriter.PopPointer(index)
+	case "argument":
+		str_to_add = CodeWriter.PopArgument(index)
+	case "local":
+		str_to_add = CodeWriter.PopLocal(index)
+	case "static":
+		str_to_add = CodeWriter.PopStatic(index, fileName)
+	case "constant":
+		str_to_add = "Error"
+	case "this":
+		str_to_add = CodeWriter.PopThis(index)
+	case "that":
+		str_to_add = CodeWriter.PopThat(index)
+	case "temp":
+		str_to_add = CodeWriter.PopTemp(index)
+	case "pointer":
+		str_to_add = CodeWriter.PopPointer(index)
 	default:
 		str_to_add = "Error"
 	}

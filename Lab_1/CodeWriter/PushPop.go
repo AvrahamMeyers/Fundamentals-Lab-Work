@@ -6,54 +6,54 @@ import (
 
 // Group 1 Memory Segments: local, argument, this, that
 
-func PushArgument(index int) string {
+func PushArgument(index string) string {
 	return pushGroup1(index, "ARG")
 }
 
-func PopArgument(index int) string {
+func PopArgument(index string) string {
 	return popGroup1(index, "ARG")
 }
 
-func PushLocal(index int) string {
+func PushLocal(index string) string {
 	return pushGroup1(index, "LCL")
 }
 
-func PopLocal(index int) string {
+func PopLocal(index string) string {
 	return popGroup1(index, "LCL")
 }
 
-func PushThis(index int) string {
+func PushThis(index string) string {
 	return pushGroup1(index, "THIS")
 }
 
-func PopThis(index int) string {
+func PopThis(index string) string {
 	return popGroup1(index, "THIS")
 }
 
-func PushThat(index int) string {
+func PushThat(index string) string {
 	return pushGroup1(index, "THAT")
 }
 
-func PopThat(index int) string {
+func PopThat(index string) string {
 	return popGroup1(index, "THAT")
 }
 
 // PopGroup1 pop the top of the stack into the segment offset by index
-func popGroup1(index int, segment string) string {
+func popGroup1(index string, segment string) string {
 	return "@SP\n" + // A = 0, the location of SP
 		"A=M\n" + // A = SP (Save this pointer in A)
 		"D=M\n" + // D = M[A] (the value at the top of the stack)
 		"@SP\n" + // A = 0, the location of SP
 		"M=M-1\n" + // SP-- (Move stack pointer one down)
 		"@" + segment + "\n" + // A = the location of the segment
-		"A=A+" + strconv.Itoa(index) + "\n" + // A = segment + index
+		"A=A+" + index + "\n" + // A = segment + index
 		"M=D\n" // M[A] = D (the value at the top of the stack)
 }
 
 // PushGroup1 push the value at the specified segment offset by index to the top of the stack
-func pushGroup1(index int, segment string) string {
+func pushGroup1(index string, segment string) string {
 	return "@" + segment + "\n" + // A = the location of the segment
-		"A=A+" + strconv.Itoa(index) + "\n" + // A = segment + index
+		"A=A+" + index + "\n" + // A = segment + index
 		"D=M\n" + // D = M[A] (the value at the segment)
 		"@SP\n" + // A = 0, the top of the stack
 		"A=M\n" + // A = SP (Save this pointer in A)
@@ -65,19 +65,23 @@ func pushGroup1(index int, segment string) string {
 // Group 2: temp
 
 // pop the top of the stack into address RAM[ 5 + x ]
-func PopTemp(index int) string {
+func PopTemp(index string) string {
+	address, _ := strconv.Atoi(index)
+
 	return "@SP\n" + // A = 0, the location of SP
 		"A=M\n" + // A = SP (Save this pointer in A)
 		"D=M\n" + // D = M[A] (the value at the top of the stack)
 		"@SP\n" + // A = 0, the location of SP
 		"M=M-1\n" + // SP-- (Move stack pointer one down)
-		"@" + strconv.Itoa(5+index) + "\n" + // A = 5 + x
+		"@" + strconv.Itoa(5+address) + "\n" + // A = 5 + x
 		"M=D\n" // M[A] = D (the value at the top of the stack)
 }
 
 // push the value at address RAM[ 5 + x ] onto the stack
-func PushTemp(index int) string {
-	return "@" + strconv.Itoa(5+index) + "\n" + // A = 5 + x
+func PushTemp(index string) string {
+	address, _ := strconv.Atoi(index)
+
+	return "@" + strconv.Itoa(5+address) + "\n" + // A = 5 + x
 		"D=M\n" + // D = M[A] (the value at the address 5 + x)
 		"@SP\n" + // A = 0, the top of the stack
 		"A=M\n" + // A = SP (Save this pointer in A)
@@ -89,19 +93,19 @@ func PushTemp(index int) string {
 // Group 3: static
 
 // pop the top of the stack into address file_name.index
-func PopStatic(index int, file_name string) string {
+func PopStatic(index string, file_name string) string {
 	return "@SP\n" + // A = 0, the location of SP
 		"A=M\n" + // A = SP (Save this pointer in A)
 		"D=M\n" + // D = M[A] (the value at the top of the stack)
 		"@SP\n" + // A = 0, the location of SP
 		"M=M-1\n" + // SP-- (Move stack pointer one down)
-		"@" + file_name + "." + strconv.Itoa(index) + "\n" + // A = file_name.index
+		"@" + file_name + "." + index + "\n" + // A = file_name.index
 		"M=D\n" // M[A] = D (the value at the top of the stack)
 }
 
 // push the value at address file_name.index onto the stack
-func PushStatic(index int, file_name string) string {
-	return "@" + file_name + "." + strconv.Itoa(index) + "\n" + // A = file_name.index
+func PushStatic(index string, file_name string) string {
+	return "@" + file_name + "." + index + "\n" + // A = file_name.index
 		"D=M\n" + // D = M[A] (the value at the address file_name.index)
 		"@SP\n" + // A = 0, the top of the stack
 		"A=M\n" + // A = SP (Save this pointer in A)
@@ -114,9 +118,9 @@ func PushStatic(index int, file_name string) string {
 
 // pop the top of the stack into address RAM[THIS/THAT]
 // index = 0: THIS, index = 1: THAT
-func PopPointer(index int) string {
+func PopPointer(index string) string {
 	segment := "THIS"
-	if index == 1 {
+	if index == "1" {
 		segment = "THAT"
 	}
 
@@ -131,9 +135,9 @@ func PopPointer(index int) string {
 
 // push the value at address THIS/THAT onto the stack
 // index = 0: THIS, index = 1: THAT
-func PushPointer(index int) string {
+func PushPointer(index string) string {
 	segment := "THIS"
-	if index == 1 {
+	if index == "1" {
 		segment = "THAT"
 	}
 
