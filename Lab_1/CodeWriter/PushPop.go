@@ -6,8 +6,40 @@ import (
 
 // Group 1 Memory Segments: local, argument, this, that
 
+func PushArgument(index int) string {
+	return pushGroup1(index, "ARG")
+}
+
+func PopArgument(index int) string {
+	return popGroup1(index, "ARG")
+}
+
+func PushLocal(index int) string {
+	return pushGroup1(index, "LCL")
+}
+
+func PopLocal(index int) string {
+	return popGroup1(index, "LCL")
+}
+
+func PushThis(index int) string {
+	return pushGroup1(index, "THIS")
+}
+
+func PopThis(index int) string {
+	return popGroup1(index, "THIS")
+}
+
+func PushThat(index int) string {
+	return pushGroup1(index, "THAT")
+}
+
+func PopThat(index int) string {
+	return popGroup1(index, "THAT")
+}
+
 // PopGroup1 pop the top of the stack into the segment offset by index
-func PopGroup1(index int, segment string) string {
+func popGroup1(index int, segment string) string {
 	return "@SP\n" + // A = 0, the location of SP
 		"A=M\n" + // A = SP (Save this pointer in A)
 		"D=M\n" + // D = M[A] (the value at the top of the stack)
@@ -19,7 +51,7 @@ func PopGroup1(index int, segment string) string {
 }
 
 // PushGroup1 push the value at the specified segment offset by index to the top of the stack
-func PushGroup1(index int, segment string) string {
+func pushGroup1(index int, segment string) string {
 	return "@" + segment + "\n" + // A = the location of the segment
 		"A=A+" + strconv.Itoa(index) + "\n" + // A = segment + index
 		"D=M\n" + // D = M[A] (the value at the segment)
