@@ -1,8 +1,10 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
 	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
 
@@ -41,10 +43,16 @@ func processFile(input_file_content string, output_file *os.File, fileName strin
 }
 
 func readFolderPath() string {
-	var input string
-	fmt.Scanln(&input)
-	//fmt.Println("Folder name is:", input)
-	return input
+	reader := bufio.NewReader(os.Stdin)
+	fmt.Print("Enter the folder path: ")
+	folderPath, err := reader.ReadString('\n')
+	if err != nil {
+		fmt.Println("Error reading input:", err)
+		return "Error"
+	}
+	// Remove the newline character from the end of the input
+	folderPath = strings.TrimSpace(folderPath)
+	return folderPath
 }
 
 func readFileNamesFromFolder(folder_name string) []string {
@@ -70,7 +78,8 @@ func new_main() {
 	folder_path := readFolderPath()
 	file_names := readFileNamesFromFolder(folder_path)
 
-	folder_name := strings.Split(folder_path, "/")[1]
+	// Get the base name of the path
+	folder_name := filepath.Base(folder_path)
 
 	output_file, err := os.Create(folder_name + ".asm")
 	if err != nil {
