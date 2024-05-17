@@ -5,14 +5,12 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"strconv"
 	"strings"
 
 	"github.com/AvrahamMeyers/Fundamentals-Lab-Work/Lab_1/Parser"
 )
 
 func processFile(input_file_content string, output_file *os.File, fileName string) {
-	var counter_logical int = 0
 
 	//fmt.Println(string(data))
 	datastring := input_file_content
@@ -33,12 +31,6 @@ func processFile(input_file_content string, output_file *os.File, fileName strin
 				return
 			}
 		}
-	}
-	var err error
-	_, err = output_file.WriteString("counter: " + strconv.Itoa(counter_logical) + "\n")
-	if err != nil {
-		fmt.Println("Error appending to file:", err)
-		return
 	}
 }
 
