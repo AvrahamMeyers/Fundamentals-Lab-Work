@@ -50,7 +50,7 @@ func popGroup1(index string, segment string) string {
 		"M=D\n" // M[A] = D (the value at the top of the stack)
 }
 
-// PushGroup1 push the value at the specified segment offset by index to the top of the stack
+// PushGroup1 push the value at the SPecified segment offset by index to the top of the stack
 func pushGroup1(index string, segment string) string {
 	return "@" + segment + "\n" + // A = the location of the segment
 		"A=A+" + index + "\n" + // A = segment + index

@@ -3,7 +3,7 @@ package CodeWriter
 // true if x = y and false otherwise
 
 func Eq() string {
-	return "@sp\n" + //stack pointer.
+	return "@SP\n" + //stack pointer.
 		"A=M\n" + //get the value of the top of the stack
 		"D=M\n" + // reg(D) = the value stored at the top of the stack
 		"A=A-1\n" + //move the stack down one or perhaps it should be the opposite up one depends on stack implementation
@@ -12,7 +12,7 @@ func Eq() string {
 }
 
 func Gt() string {
-	return "@sp\n" + //stack pointer.
+	return "@SP\n" + //stack pointer.
 		"A=M\n" + //get the value of the top of the stack.
 		"D=M\n" + // reg(D) = the value stored at the top of the stack
 		"A=A-1\n" + //move the stack down one or perhaps it should be the opposite up one depends on stack implementation
@@ -20,7 +20,7 @@ func Gt() string {
 		"M=D\n" //load the value returned back to top of the stack
 }
 func Lt() string {
-	return "@sp\n" + //stack pointer.
+	return "@SP\n" + //stack pointer.
 		"A=M\n" + //get the value of the top of the stack
 		"D=M\n" + // reg(D) = the value stored at the top of the stack
 		"A=A-1\n" + //move the stack down one or perhaps it should be the opposite up one depends on stack implementation
