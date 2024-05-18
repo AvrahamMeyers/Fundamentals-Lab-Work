@@ -7,7 +7,7 @@ import (
 	"github.com/AvrahamMeyers/Fundamentals-Lab-Work/Lab_1/CodeWriter"
 )
 
-func Handle_line(line string, fileName string) string {
+func Handle_line(line string, fileName string, counter int) string {
 	words := strings.Fields(line)
 	//todo: check if line is valid
 
@@ -20,11 +20,14 @@ func Handle_line(line string, fileName string) string {
 	case "neg":
 		str_to_add = CodeWriter.Neg()
 	case "eq":
-		str_to_add = CodeWriter.Eq()
+		str_to_add = CodeWriter.Eq(counter)
+		counter += 1
 	case "gt":
-		str_to_add = CodeWriter.Gt()
+		str_to_add = CodeWriter.Gt(counter)
+		counter += 1
 	case "lt":
-		str_to_add = CodeWriter.Lt()
+		str_to_add = CodeWriter.Lt(counter)
+		counter += 1
 	case "and":
 		str_to_add = CodeWriter.And()
 	case "or":
