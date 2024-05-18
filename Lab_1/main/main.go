@@ -19,6 +19,7 @@ func processFile(input_file_content string, output_file *os.File, fileName strin
 	lines := strings.Split(datastring, "\n")
 
 	for _, line := range lines {
+		fmt.Println(line)
 		words := strings.Fields(line)
 		if len(words) > 0 {
 			//split the line into an array(slice)
@@ -73,7 +74,7 @@ func new_main() {
 	// Get the base name of the path
 	folder_name := filepath.Base(folder_path)
 
-	output_file, err := os.Create(folder_name + ".asm")
+	output_file, err := os.Create(folder_path + "/" + folder_name + ".asm")
 	if err != nil {
 		fmt.Println("Error creating file:", err)
 		return
