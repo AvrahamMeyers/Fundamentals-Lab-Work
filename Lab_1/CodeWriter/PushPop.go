@@ -40,20 +40,31 @@ func PopThat(index string) string {
 
 // PopGroup1 pop the top of the stack into the segment offset by index
 func popGroup1(index string, segment string) string {
-	return "@SP\n" + // A = 0, the location of SP
+	return "@" + index + "\n" + "D=A\n" +
+		//"@" + index + "\n" +
+		"@" + segment + "\n" + // A = the location of the segment
+		"A=M\n" +
+		"A=D+A" + "\n" + // A = segment + index
+		"D=A\n" +
+		"@5\n" + "M=D\n" +
+		"@SP\n" + // A = 0, the location of SP
+		"M=M-1\n" + //move to top of stack
 		"A=M\n" + // A = SP (Save this pointer in A)
 		"D=M\n" + // D = M[A] (the value at the top of the stack)
-		"@SP\n" + // A = 0, the location of SP
-		"M=M-1\n" + // SP-- (Move stack pointer one down)
-		"@" + segment + "\n" + // A = the location of the segment
-		"A=A+" + index + "\n" + // A = segment + index
-		"M=D\n" // M[A] = D (the value at the top of the stack)
+		//"@SP\n" + // A = 0, the location of SP
+		//"M=M-1\n" + // SP-- (Move stack pointer one down)
+		//"M=D\n" // M[A] = D (the value at the top of the stack)
+		"@5\n" +
+		"A=M\n" +
+		"M=D\n"
 }
 
 // PushGroup1 push the value at the SPecified segment offset by index to the top of the stack
 func pushGroup1(index string, segment string) string {
-	return "@" + segment + "\n" + // A = the location of the segment
-		"A=A+" + index + "\n" + // A = segment + index
+	return "@" + index + "\n" + "D=A\n" +
+		"@" + segment + "\n" + // A = the location of the segment
+		"A=M\n" +
+		"A=A+D" + "\n" + // A = segment + index
 		"D=M\n" + // D = M[A] (the value at the segment)
 		"@SP\n" + // A = 0, the top of the stack
 		"A=M\n" + // A = SP (Save this pointer in A)
