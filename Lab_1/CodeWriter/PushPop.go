@@ -80,10 +80,8 @@ func PopTemp(index string) string {
 	address, _ := strconv.Atoi(index)
 
 	return "@SP\n" + // A = 0, the location of SP
-		"A=M-1\n" + // A = SP (Save this pointer in A)
+		"AM=M-1\n" + // A = SP (Save this pointer in A)
 		"D=M\n" + // D = M[A] (the value at the top of the stack)
-		"@SP\n" + // A = 0, the location of SP
-		"M=M-1\n" + // SP-- (Move stack pointer one down)
 		"@" + strconv.Itoa(5+address) + "\n" + // A = 5 + x
 		"M=D\n" // M[A] = D (the value at the top of the stack)
 }
@@ -106,10 +104,8 @@ func PushTemp(index string) string {
 // pop the top of the stack into address file_name.index
 func PopStatic(index string, file_name string) string {
 	return "@SP\n" + // A = 0, the location of SP
-		"A=M\n" + // A = SP (Save this pointer in A)
+		"AM=M-1\n" + // AM = SP - 1 (Save this pointer in A, SP--)
 		"D=M\n" + // D = M[A] (the value at the top of the stack)
-		"@SP\n" + // A = 0, the location of SP
-		"M=M-1\n" + // SP-- (Move stack pointer one down)
 		"@" + file_name + "." + index + "\n" + // A = file_name.index
 		"M=D\n" // M[A] = D (the value at the top of the stack)
 }
@@ -134,12 +130,9 @@ func PopPointer(index string) string {
 	if index == "1" {
 		segment = "THAT"
 	}
-
 	return "@SP\n" + // A = 0, the location of SP
-		"A=M\n" + // A = SP (Save this pointer in A)
+		"AM=M-1\n" + // AM = SP - 1 (Save this pointer in A, SP--)
 		"D=M\n" + // D = M[A] (the value at the top of the stack)
-		"@SP\n" + // A = 0, the location of SP
-		"M=M-1\n" + // SP-- (Move stack pointer one down)
 		"@" + segment + "\n" + // A = THIS/THAT
 		"M=D\n" // M[A] = D (the value at the top of the stack)
 }
