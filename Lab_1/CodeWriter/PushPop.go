@@ -80,7 +80,7 @@ func PopTemp(index string) string {
 	address, _ := strconv.Atoi(index)
 
 	return "@SP\n" + // A = 0, the location of SP
-		"A=M\n" + // A = SP (Save this pointer in A)
+		"A=M-1\n" + // A = SP (Save this pointer in A)
 		"D=M\n" + // D = M[A] (the value at the top of the stack)
 		"@SP\n" + // A = 0, the location of SP
 		"M=M-1\n" + // SP-- (Move stack pointer one down)

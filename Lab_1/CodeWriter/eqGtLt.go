@@ -16,12 +16,11 @@ func Eq(counter int) string {
 		"D;JMP\n" + //JUMP TO THE END
 		"(IF_TRUE" + strconv.Itoa(counter) + ")\n" + // true label
 		"D=-1\n" + //SET D=-1 THOUGHT IT WOULD BE 0 BUT THE TESTS WANT -1
-		"(END" + strconv.Itoa(counter) + ")" + "\n" +
-		"@SP\n" +
-		"A=M\n" +
-		"A=A-1\n" +
-		"M=D\n"
-
+		"(END" + strconv.Itoa(counter) + ")" + "\n" + //End label
+		"@SP\n" + //A=0
+		"A=M\n" + //set A of Ram[A] set to point at top of stack (+1)
+		"A=A-1\n" + // Now point at the topmost elelment of the stack which was last element popped
+		"M=D\n" // set the top of the stack to appropriate logical value
 }
 
 //Attempt at Eq by Avi
