@@ -40,35 +40,34 @@ func PopThat(index string) string {
 
 // PopGroup1 pop the top of the stack into the segment offset by index
 func popGroup1(index string, segment string) string {
-	return "@" + index + "\n" + "D=A\n" + //save the index into D
-		//"@" + index + "\n" +
+	return "@" + index + "\n" + // load the index into A
+		"D=A\n" + //save the index into D
 		"@" + segment + "\n" + // A = the location of the segment
-		"A=M\n" + //get the segment
-		"A=D+A" + "\n" + // A = segment + index
-		"D=A\n" + // save the segment plus index into D
-		"@5\n" + "M=D\n" + //use one of the temp registers to save the placement
+		"A=M\n" + //get the segment address
+		"D=D+A" + "\n" + // D = index + segment
 		"@SP\n" + // A = 0, the location of SP
-		"M=M-1\n" + //move to top of stack
-		"A=M\n" + // A = SP (Save this pointer in A)
+		"A=M\n" + // A is the address of the top of the stack
+		"M=D\n" + // save the segment plus index into the stack
+		"A=A-1\n" + //get address of value at the top of the stack
 		"D=M\n" + // D = M[A] (the value at the top of the stack)
-		//"@SP\n" + // A = 0, the location of SP
-		//"M=M-1\n" + // SP-- (Move stack pointer one down)
-		//"M=D\n" // M[A] = D (the value at the top of the stack)
-		"@5\n" + //temp reg
-		"A=M\n" + // get the value saved above
-		"M=D\n" // save the poped item into the correct spot
+		"A=A+1\n" + //get address of the segment plus index
+		"A=M\n" + // A = segment + index
+		"M=D\n" + // save the value at the top of the stack into the address: segment plus index
+		"@SP\n" + // A = 0, the location of SP
+		"M=M-1\n" // move the stack pointer down
 }
 
-// PushGroup1 push the value at the SPecified segment offset by index to the top of the stack
+// PushGroup1 push the value at the specified segment offset by index to the top of the stack
 func pushGroup1(index string, segment string) string {
-	return "@" + index + "\n" + "D=A\n" + // save index into D
-		"@" + segment + "\n" + // A = the location of the segment
-		"A=M\n" + //set the segment
+	return "@" + index + "\n" + // load the index into A
+		"D=A\n" + // save index into D
+		"@" + segment + "\n" + // A = the location of the segment address
+		"A=M\n" + //A = the segment address
 		"A=A+D" + "\n" + // A = segment + index
 		"D=M\n" + // D = M[A] (the value at the segment)
-		"@SP\n" + // A = 0, the top of the stack
-		"A=M\n" + // A = SP (Save this pointer in A)
-		"M=D\n" + // M[A] = D (the value at the segment)
+		"@SP\n" + // A = 0, the location of SP
+		"A=M\n" + // A is the address of the top of the stack
+		"M=D\n" + // save the segment plus index into the stack
 		"@SP\n" + // A = 0, the location of SP
 		"M=M+1\n" // SP++ (Move stack pointer one up)
 }
