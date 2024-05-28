@@ -49,7 +49,6 @@ func Handle_line(line string, fileName string, counter int, fnction *string, lcl
 		}
 		str_to_add = str
 	case "//":
-		fmt.Println("comment line")
 		str_to_add = line + "\n"
 	case "function":
 		str_to_add = "// Now in Function " + words[1] + "\n" // adding a comment to the file.
@@ -59,12 +58,14 @@ func Handle_line(line string, fileName string, counter int, fnction *string, lcl
 		*fnction = words[1]
 		//k-local-variables = words[2]
 		*lclVar = words[2]
+	case "label":
+		str_to_add = CodeWriter.Label(*fnction, words[1])
 
 	default:
-		fmt.Println("Error: not correct line")
 		str_to_add = "//The following line was not handled: " + line + "\n"
 	}
 	return str_to_add
+
 }
 
 func handlePush(segment string, index string, fileName string) string {
