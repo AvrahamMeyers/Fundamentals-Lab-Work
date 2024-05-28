@@ -18,11 +18,14 @@ func processFile(input_file_content string, output_file *os.File, fileName strin
 	//split the text into lines
 	lines := strings.Split(datastring, "\n")
 	counter := 0
+	fnName := "Global"
+	lclVar := "0"
+
 	for _, line := range lines {
 		words := strings.Fields(line)
 		if len(words) > 0 {
 			//split the line into an array(slice)
-			str_to_add := Parser.Handle_line(line, fileName, counter)
+			str_to_add := Parser.Handle_line(line, fileName, counter, &fnName, &lclVar)
 			counter++
 			var err error
 			_, err = output_file.WriteString(str_to_add)
