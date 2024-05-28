@@ -51,7 +51,7 @@ func Handle_line(line string, fileName string, counter int, fnction *string, lcl
 	case "//":
 		str_to_add = line + "\n"
 	case "function":
-		str_to_add = "// Now in Function " + words[1] + "\n" // adding a comment to the file.
+		str_to_add = "// Now in Function " + words[1] + "\n(" + words[1] + ")\n" // adding a comment to the file.
 
 		//function format: a function is declared function=(words[0])
 		//function.name=(wordss[1]),
