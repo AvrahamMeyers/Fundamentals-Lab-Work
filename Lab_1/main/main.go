@@ -83,6 +83,11 @@ func new_main() {
 		return
 	}
 
+	_, err = output_file.WriteString(CodeWriter.Bootsrap())
+	if err != nil {
+		fmt.Println("Error appending to file:", err)
+		return
+	}
 	for _, file_name := range file_names {
 
 		file_title := strings.Split(file_name, ".")[0]
@@ -95,11 +100,7 @@ func new_main() {
 		}
 
 		input_file_content := string(input_file)
-		_, err = output_file.WriteString(CodeWriter.Bootsrap())
-		if err != nil {
-			fmt.Println("Error appending to file:", err)
-			return
-		}
+
 		processFile(input_file_content, output_file, file_title)
 
 		fmt.Println("End of input file: ", file_title)

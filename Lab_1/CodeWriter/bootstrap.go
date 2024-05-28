@@ -6,6 +6,6 @@ func Bootsrap() string {
 		"@SP\n" +
 		"M=D\n" +
 		"@Sys.init\n" +
-		"D;jmp\n"
+		"D;JMP\n"
 
 }
