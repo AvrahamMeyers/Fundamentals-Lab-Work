@@ -7,7 +7,7 @@ import (
 	"github.com/AvrahamMeyers/Fundamentals-Lab-Work/Lab_1/CodeWriter"
 )
 
-func Handle_line(line string, fileName string, counter int, fnction *string, lclVar *string) string {
+func Handle_line(line string, fileName string, counter int, fnction *string) string {
 	words := strings.Fields(line)
 	//todo: check if line is valid
 
@@ -51,13 +51,13 @@ func Handle_line(line string, fileName string, counter int, fnction *string, lcl
 	case "//":
 		str_to_add = line + "\n"
 	case "function":
-		str_to_add = "// Now in Function " + words[1] + "\n(" + words[1] + ")\n" // adding a comment to the file.
+		// adding a comment to the file.
+		str_to_add += CodeWriter.Function(words[1], words[2])
 
 		//function format: a function is declared function=(words[0])
 		//function.name=(wordss[1]),
 		*fnction = words[1]
-		//k-local-variables = words[2]
-		*lclVar = words[2]
+
 	case "label":
 		str_to_add = CodeWriter.Label(*fnction, words[1])
 
