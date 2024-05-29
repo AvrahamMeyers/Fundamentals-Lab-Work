@@ -61,6 +61,9 @@ func Handle_line(line string, fileName string, counter int, fnction *string) str
 	case "label":
 		str_to_add = CodeWriter.Label(*fnction, words[1])
 
+	case "goto":
+		str_to_add = CodeWriter.Goto(*fnction, words[1])
+
 	default:
 		str_to_add = "//The following line was not handled: " + line + "\n"
 	}
