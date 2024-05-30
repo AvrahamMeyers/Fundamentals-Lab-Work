@@ -2,6 +2,32 @@ package CodeWriter
 
 import "strconv"
 
+func Add() string {
+	return "@SP\n" + // A = 0, the location of SP
+		"M=M-1\n" + // SP-- (Move stack pointer one down)
+		"A=M\n" + // A = SP (Save this pointer in A)
+		"D=M\n" + // D = M[A] (the value at the top of the stack)
+		"@SP\n" + // A = 0, the location of SP
+		"A=M-1\n" + // A = M[A] - 1 (the location of the second of the stack)
+		"M=D+M\n" // M[A] = D + M[A] (the value at the top of the stack)
+}
+
+func Sub() string {
+	return "@SP\n" + // A = 0, the location of SP
+		"M=M-1\n" + // SP-- (Move stack pointer one down)
+		"A=M\n" + // A = SP (Save this pointer in A)
+		"D=M\n" + // D = M[A] (the value at the top of the stack)
+		"@SP\n" + // A = 0, the location of SP
+		"A=M-1\n" + // A = M[A] - 1 (the location of the second of the stack)
+		"M=M-D\n" // M[A] = M[A] - D (the value at the top of the stack)
+}
+
+func Neg() string {
+	return "@SP\n" +
+		"A=M-1\n" +
+		"M=-M\n"
+}
+
 func Eq(counter int) string {
 	return "@SP\n" + // A=0
 		"M=M-1\n" + //point sp at top
@@ -62,4 +88,32 @@ func Lt(counter int) string {
 		"A=M\n" +
 		"A=A-1\n" +
 		"M=D\n"
+}
+
+func And() string {
+	return "@SP\n" + // A = 0, the location of SP
+		"M=M-1\n" + // SP-- (Move stack pointer one down)
+		"A=M\n" + // A = SP (Save this pointer in A)
+		"D=M\n" + // D = M[A] (the value at the top of the stack)
+		"@SP\n" + // A = 0, the location of SP
+		"A=M-1\n" + // A = M[A] - 1 (the location of the second of the stack)
+		"M=D&M\n" // M[A] = D and M[A] (the value at the top of the stack)
+
+}
+
+func Or() string {
+	return "@SP\n" + // A = 0, the location of SP
+		"M=M-1\n" + // SP-- (Move stack pointer one down)
+		"A=M\n" + // A = SP (Save this pointer in A)
+		"D=M\n" + // D = M[A] (the value at the top of the stack)
+		"@SP\n" + // A = 0, the location of SP
+		"A=M-1\n" + // A = M[A] - 1 (the location of the second of the stack)
+		"M=D|M\n" // M[A] = D and M[A] (the value at the top of the stack)
+
+}
+
+func Not() string {
+	return "@SP\n" + // A = 0, the location of SP
+		"A=M-1\n" + // A = SP - 1 (address of the value at the top of the stack)
+		"M=!M\n" // M[A] = not M[A] (the value at the top of the stack)
 }
