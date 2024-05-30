@@ -155,11 +155,18 @@ func PushPointer(index string) string {
 		segment = "THAT"
 	}
 
-	return "@" + segment + "\n" + // A = THIS/THAT
-		"D=M\n" + // D = M[A] (the value at THIS/THAT)
-		"@SP\n" + // A = 0, the top of the stack
-		"A=M\n" + // A = SP (Save this pointer in A)
-		"M=D\n" + // M[A] = D (the value at THIS/THAT)
-		"@SP\n" + // A = 0, the location of SP
-		"M=M+1\n" // SP++ (Move stack pointer one up)
+	return PushSegmentPointer(segment)
+}
+
+func PushSegmentPointer(segment string) string {
+	return "@" + segment + "\n" +
+		"D=M\n" + // Save the segment pointer address in D
+
+		"@SP\n" + // SP* in A
+		"A=M\n" +
+
+		"M=D\n" + // Segment address in RAM[SP]
+
+		"@SP\n" + // SP++
+		"M=M+1\n"
 }
