@@ -7,7 +7,9 @@ import (
 	"github.com/AvrahamMeyers/Fundamentals-Lab-Work/Lab_1/CodeWriter"
 )
 
-func Handle_line(line string, fileName string, counter int, fnction *string) string {
+// Handle_line takes a line of code and returns the corresponding assembly code
+// scope is a pointer to a string that is used to keep track of which scope that line is in: Global, or a spefic function
+func Handle_line(line string, fileName string, counter int, scope *string) string {
 	words := strings.Fields(line)
 	//todo: check if line is valid
 
@@ -50,20 +52,22 @@ func Handle_line(line string, fileName string, counter int, fnction *string) str
 		str_to_add = str
 	case "//":
 		str_to_add = line + "\n"
+	case "label":
+		str_to_add = CodeWriter.Label(*scope, words[1])
+	case "if-goto":
+		str_to_add = CodeWriter.Goto(*scope, words[1])
 	case "function":
 		// adding a comment to the file.
 		str_to_add += CodeWriter.Function(words[1], words[2])
 
 		//function format: a function is declared function=(words[0])
 		//function.name=(wordss[1]),
-		*fnction = words[1]
-
-	case "label":
-		str_to_add = CodeWriter.Label(*fnction, words[1])
-
-	case "if-goto":
-		str_to_add = CodeWriter.Goto(*fnction, words[1])
-
+		*scope = words[1]
+	case "call":
+		str_to_add = CodeWriter.Call(words[1], words[2], counter)
+		counter += 1
+	case "return":
+		str_to_add = CodeWriter.Return()
 	default:
 		str_to_add = "//The following line was not handled: " + line + "\n"
 	}
