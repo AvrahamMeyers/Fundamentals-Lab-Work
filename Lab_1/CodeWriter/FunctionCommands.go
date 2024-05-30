@@ -6,19 +6,21 @@ import (
 )
 
 func Function(funcName string, label string) string {
-	str_to_add := "// Now in Function " + funcName + "\n(" + funcName + ")\n"
-	lclVar, err := strconv.Atoi(label)
+	str_to_add := "// Now in Function " + funcName + "\n" +
+		"(" + funcName + ")\n"
+
+	labelVar, err := strconv.Atoi(label)
 	if err != nil {
 		fmt.Println("There was a problem converting a number from string to int in the function Function of Codewriter")
 	}
-	for i := 0; i < lclVar; i++ {
+	for i := 0; i < labelVar; i++ {
 		str_to_add += PushConstant("0")
 	}
 	return str_to_add
 }
 
-func Call(scope string, label string, argNum string, counter int) string {
-	return "// Now in Call " + scope + "\n" +
+func Call(funcName string, argNum string, counter int) string {
+	return "// Now in Call " + funcName + "\n" +
 		"@RETURN_ADDRESS" + strconv.Itoa(counter) + "\n" +
 		"D=A\n" + // Save return address in D
 		"@SP\n" +
@@ -46,7 +48,8 @@ func Call(scope string, label string, argNum string, counter int) string {
 		"@LCL\n" +
 		"M=D\n" +
 
-		Goto(scope, label) + // goto f
+		"@" + funcName + "\n" + //label to jump to
+		"0;JMP\n" + //jump uncondionally + // goto f
 
 		"(RETURN_ADDRESS" + strconv.Itoa(counter) + ")\n" // (return-address)
 }
