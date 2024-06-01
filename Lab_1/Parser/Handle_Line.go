@@ -55,6 +55,8 @@ func Handle_line(line string, fileName string, counter int, scope *string) strin
 	case "label":
 		str_to_add = CodeWriter.Label(*scope, words[1])
 	case "if-goto":
+		str_to_add = CodeWriter.GotoIf(*scope, words[1])
+	case "goto":
 		str_to_add = CodeWriter.Goto(*scope, words[1])
 	case "function":
 		// adding a comment to the file.
