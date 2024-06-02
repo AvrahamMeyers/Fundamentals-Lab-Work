@@ -54,5 +54,52 @@ func Call(funcName string, argNum string, counter int) string {
 		"(RETURN_ADDRESS" + strconv.Itoa(counter) + ")\n" // (return-address)
 }
 
+// Not done yet need to check all of this funciton
 func Return() string {
+	return "// Now in Return\n" +
+		"@LCL\n" + // R5 = LCL 		R5 - R12 are temporary variables
+		"D=M\n" +
+		"@5\n" +
+		"M=D\n" +
+
+		"@5\n" + // Return address in R6, RET = *(LCL-5)
+		"A=D-A\n" +
+		"D=M\n" +
+		"@6\n" +
+		"M=D\n" +
+
+		PopArgument("0") + // *ARG = pop()
+
+		"@ARG\n" + // SP = ARG + 1
+		"D=M\n" +
+		"@SP\n" +
+		"M=D+1\n" +
+
+		"@R13\n" +
+		"AM=M-1\n" +
+		"D=M\n" +
+		"@THAT\n" +
+		"M=D\n" + // THAT = *(LCL-1)
+
+		"@R13\n" +
+		"AM=M-1\n" +
+		"D=M\n" +
+		"@THIS\n" +
+		"M=D\n" + // THIS = *(LCL-2)
+
+		"@R13\n" +
+		"AM=M-1\n" +
+		"D=M\n" +
+		"@ARG\n" +
+		"M=D\n" + // ARG = *(LCL-3)
+
+		"@R13\n" +
+		"AM=M-1\n" +
+		"D=M\n" +
+		"@LCL\n" +
+		"M=D\n" + // LCL = *(LCL-4)
+
+		"@R14\n" +
+		"A=M\n" +
+		"0;JMP\n" // goto return-address
 }
