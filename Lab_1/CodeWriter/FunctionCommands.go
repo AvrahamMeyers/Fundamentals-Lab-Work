@@ -54,7 +54,7 @@ func Call(funcName string, argNum string, counter int) string {
 		"(RETURN_ADDRESS" + strconv.Itoa(counter) + ")\n" // (return-address)
 }
 
-// Restores the segment pointer to the value that was saved in the frame.
+// Helper function that restores the segment pointer to the value that was saved in the frame.
 // Assumes Frame is in R5, decrements frame by 1 each time this function is run.
 func restoreSegmentPointer(segment string) string {
 	return "@R5\n" +
