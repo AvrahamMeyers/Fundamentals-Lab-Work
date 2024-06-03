@@ -158,6 +158,7 @@ func PushPointer(index string) string {
 	return PushSegmentPointer(segment)
 }
 
+// Pushes the value at the segment pointer onto the stack
 func PushSegmentPointer(segment string) string {
 	return "@" + segment + "\n" +
 		"D=M\n" + // Save the segment pointer address in D
