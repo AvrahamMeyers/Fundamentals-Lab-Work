@@ -54,16 +54,26 @@ func Call(funcName string, argNum string, counter int) string {
 		"(RETURN_ADDRESS" + strconv.Itoa(counter) + ")\n" // (return-address)
 }
 
+// Restores the segment pointer to the value that was saved in the frame.
+// Assumes Frame is in R5, decrements frame by 1 each time this function is run.
+func restoreSegmentPointer(segment string) string {
+	return "@R5\n" +
+		"AM=M-1\n" +
+		"D=M\n" +
+		"@" + segment + "\n" +
+		"M=D\n"
+}
+
 // Not done yet need to check all of this funciton
 func Return() string {
 	return "// Now in Return\n" +
-		"@LCL\n" + // R5 = LCL 		R5 - R12 are temporary variables
+		"@LCL\n" + // R5 = LCL 		(R5 - R12 are temporary variables)
 		"D=M\n" +
 		"@5\n" +
 		"M=D\n" +
 
 		"@5\n" + // Return address in R6, RET = *(LCL-5)
-		"A=D-A\n" +
+		"A=M-A\n" +
 		"D=M\n" +
 		"@6\n" +
 		"M=D\n" +
@@ -75,31 +85,12 @@ func Return() string {
 		"@SP\n" +
 		"M=D+1\n" +
 
-		"@R13\n" +
-		"AM=M-1\n" +
-		"D=M\n" +
-		"@THAT\n" +
-		"M=D\n" + // THAT = *(LCL-1)
+		restoreSegmentPointer("THAT") + // THAT = *(LCL-1)
+		restoreSegmentPointer("THIS") + // THIS = *(LCL-2)
+		restoreSegmentPointer("ARG") + // ARG = *(LCL-3)
+		restoreSegmentPointer("LCL") + // LCL = *(LCL-4)
 
-		"@R13\n" +
-		"AM=M-1\n" +
-		"D=M\n" +
-		"@THIS\n" +
-		"M=D\n" + // THIS = *(LCL-2)
-
-		"@R13\n" +
-		"AM=M-1\n" +
-		"D=M\n" +
-		"@ARG\n" +
-		"M=D\n" + // ARG = *(LCL-3)
-
-		"@R13\n" +
-		"AM=M-1\n" +
-		"D=M\n" +
-		"@LCL\n" +
-		"M=D\n" + // LCL = *(LCL-4)
-
-		"@R14\n" +
+		"@R6\n" + // goto return-address
 		"A=M\n" +
-		"0;JMP\n" // goto return-address
+		"0;JMP\n"
 }
