@@ -8,8 +8,12 @@ func Goto(funcName string, label string) string {
 
 // funcName is also the scope
 func GotoIf(funcName string, label string) string {
-	return "D=D+1\n" +
+	return "@SP\n" +
+		"A=M\n" + //A = SP address
+		"A=A-1\n" + //A = SP - 1
+		"D=M\n" + //D = value at top of stack
+		"@SP\n" +
+		"M=M-1\n" + //SP--
 		"@" + funcName + "$" + label + "\n" +
-		"D;JEQ\n"
-	//may need to pop one of the stack. will find out during testing.
+		"D;JNE\n" // jump if D != 0
 }

@@ -78,7 +78,7 @@ func pushGroup1(index string, segment string) string {
 		"D=M\n" + // D = M[A] (the value at the segment)
 		"@SP\n" + // A = 0, the location of SP
 		"A=M\n" + // A is the address of the top of the stack
-		"M=D\n" + // save the segment plus index into the stack
+		"M=D\n" + // save the value at the segment into the stack
 		"@SP\n" + // A = 0, the location of SP
 		"M=M+1\n" // SP++ (Move stack pointer one up)
 }
