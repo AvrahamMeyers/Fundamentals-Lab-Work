@@ -92,7 +92,7 @@ func Return() string {
 		restoreSegmentPointer("ARG") + // ARG = *(LCL-3)
 		restoreSegmentPointer("LCL") + // LCL = *(LCL-4)
 
-		"@R6\n" + // goto return-address
+		"@6\n" + // goto return-address
 		"A=M\n" +
 		"0;JMP\n"
 }
