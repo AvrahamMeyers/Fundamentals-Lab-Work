@@ -58,7 +58,7 @@ func Call(funcName string, argNum string, counter int) string {
 // Assumes Frame is in R5, decrements frame by 1 each time this function is run.
 func restoreSegmentPointer(segment string) string {
 	return "//now in restore Segment Pointer for " + segment + "\n" +
-		"@R5\n" +
+		"@5\n" +
 		"AM=M-1\n" +
 		"D=M\n" +
 		"@" + segment + "\n" +
