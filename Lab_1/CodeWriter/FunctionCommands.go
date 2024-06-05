@@ -90,7 +90,7 @@ func Return() string {
 		restoreSegmentPointer("THAT") + // THAT = *(LCL-1)
 		restoreSegmentPointer("THIS") + // THIS = *(LCL-2)
 		restoreSegmentPointer("ARG") + // ARG = *(LCL-3)
-		restoreSegmentPointer("LCL") + // LCL = *(LCL-4)
+		restoreSegmentPointer("LCL") + // Parent functions LCL = *(LCL-4)
 
 		"@13\n" + // goto return-address in R13
 		"A=M\n" +
