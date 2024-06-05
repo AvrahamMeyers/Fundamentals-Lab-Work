@@ -51,7 +51,8 @@ func PopThat(index string) string {
 
 // PopGroup1 pop the top of the stack into the segment offset by index
 func popGroup1(index string, segment string) string {
-	return "@" + index + "\n" + // load the index into A
+	return "//PopGroup1\n" +
+		"@" + index + "\n" + // load the index into A
 		"D=A\n" + //save the index into D
 		"@" + segment + "\n" + // A = the location of the segment
 		"A=M\n" + //get the segment address
@@ -70,7 +71,8 @@ func popGroup1(index string, segment string) string {
 
 // PushGroup1 push the value at the specified segment offset by index to the top of the stack
 func pushGroup1(index string, segment string) string {
-	return "@" + index + "\n" + // load the index into A
+	return "//pushgroup1\n" +
+		"@" + index + "\n" + // load the index into A
 		"D=A\n" + // save index into D
 		"@" + segment + "\n" + // A = the location of the segment address
 		"A=M\n" + //A = the segment address

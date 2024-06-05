@@ -73,7 +73,7 @@ func Handle_line(line string, fileName string, counter int, scope *string) strin
 	default:
 		str_to_add = "//The following line was not handled: " + line + "\n"
 	}
-	return str_to_add
+	return "//" + line + "\n" + str_to_add
 
 }
 
