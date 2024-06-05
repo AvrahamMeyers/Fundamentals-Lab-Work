@@ -57,7 +57,7 @@ func Call(funcName string, argNum string, counter int) string {
 // Helper function that restores the segment pointer to the value that was saved in the frame.
 // Assumes Frame is in R5, decrements frame by 1 each time this function is run.
 func restoreSegmentPointer(segment string) string {
-	return "@R5\n" +
+	return "@5\n" +
 		"AM=M-1\n" +
 		"D=M\n" +
 		"@" + segment + "\n" +
