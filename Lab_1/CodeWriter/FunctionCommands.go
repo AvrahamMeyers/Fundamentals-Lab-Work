@@ -73,7 +73,8 @@ func Return() string {
 		"M=D\n" +
 
 		"@5\n" + // Return address in R6, RET = *(LCL-5)
-		"A=M-A\n" +
+		"D=A\n" +
+		"A=M-D\n" +
 		"D=M\n" +
 		"@6\n" +
 		"M=D\n" +
