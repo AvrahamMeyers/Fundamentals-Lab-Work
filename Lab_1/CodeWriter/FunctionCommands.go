@@ -68,16 +68,20 @@ func restoreSegmentPointer(segment string) string {
 // Not done yet need to check all of this funciton
 func Return() string {
 	return "// Now in Return\n" +
+		"@5\n" +
+		"D=M\n" +
+		"@13\n" +
+		"M=D\n" +
 		"@LCL\n" + // R5 = LCL 		(R5 - R12 are temporary variables)
 		"D=M\n" +
-		"@14\n" +
+		"@5\n" +
 		"M=D\n" +
 
-		"@14\n" + // Return address in R13, RET = *(LCL-5)
+		"@5\n" + // Return address in R6, RET = *(LCL-5)
 		"D=A\n" +
 		"A=M-D\n" +
 		"D=M\n" +
-		"@13\n" +
+		"@6\n" +
 		"M=D\n" +
 
 		PopArgument("0") + // *ARG = pop()
@@ -91,7 +95,10 @@ func Return() string {
 		restoreSegmentPointer("THIS") + // THIS = *(LCL-2)
 		restoreSegmentPointer("ARG") + // ARG = *(LCL-3)
 		restoreSegmentPointer("LCL") + // LCL = *(LCL-4)
-
+		"@13\n" +
+		"D=M\n" +
+		"@5\n" +
+		"M=D\n" +
 		"@6\n" + // goto return-address
 		"A=M\n" +
 		"0;JMP\n"
