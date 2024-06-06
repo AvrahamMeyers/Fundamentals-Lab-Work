@@ -36,7 +36,7 @@ func Call(funcName string, argNum string, counter int) string {
 
 		"@SP\n" + // ARG = SP - 5 - argNum
 		"D=M\n" +
-		"@5\n" +
+		"@14\n" +
 		"D=D-A\n" +
 		"@" + argNum + "\n" +
 		"D=D-A\n" +
@@ -55,10 +55,10 @@ func Call(funcName string, argNum string, counter int) string {
 }
 
 // Helper function that restores the segment pointer to the value that was saved in the frame.
-// Assumes Frame is in R5, decrements frame by 1 each time this function is run.
+// Assumes Frame is in R14, decrements frame by 1 each time this function is run.
 func restoreSegmentPointer(segment string) string {
 	return "//now in restore Segment Pointer for " + segment + "\n" +
-		"@5\n" +
+		"@14\n" +
 		"AM=M-1\n" +
 		"D=M\n" +
 		"@" + segment + "\n" +
@@ -68,20 +68,16 @@ func restoreSegmentPointer(segment string) string {
 // Not done yet need to check all of this funciton
 func Return() string {
 	return "// Now in Return\n" +
-		"@5\n" +
-		"D=M\n" +
-		"@13\n" +
-		"M=D\n" +
 		"@LCL\n" + // R5 = LCL 		(R5 - R12 are temporary variables)
 		"D=M\n" +
-		"@5\n" +
+		"@14\n" +
 		"M=D\n" +
 
-		"@5\n" + // Return address in R6, RET = *(LCL-5)
+		"@14\n" + // Return address in R13, RET = *(LCL-5)
 		"D=A\n" +
 		"A=M-D\n" +
 		"D=M\n" +
-		"@6\n" +
+		"@13\n" +
 		"M=D\n" +
 
 		PopArgument("0") + // *ARG = pop()
@@ -95,10 +91,7 @@ func Return() string {
 		restoreSegmentPointer("THIS") + // THIS = *(LCL-2)
 		restoreSegmentPointer("ARG") + // ARG = *(LCL-3)
 		restoreSegmentPointer("LCL") + // LCL = *(LCL-4)
-		"@13\n" +
-		"D=M\n" +
-		"@5\n" +
-		"M=D\n" +
+
 		"@6\n" + // goto return-address
 		"A=M\n" +
 		"0;JMP\n"
