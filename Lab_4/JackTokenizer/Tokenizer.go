@@ -1,16 +1,20 @@
 package jacktokenizer
 
-func Constructor() {
+type Tokenizer struct {
+	//here we may want items such as current token file pointer
+}
+
+func (Tokenizer) Constructor() {
 	/*Opens the input file/stream and gets
 	ready to tokenize it.*/
 }
 
-func HasMoreTokens() bool {
+func (Tokenizer) HasMoreTokens() bool {
 	//Do we have more tokens in the input?
 	return false
 }
 
-func Advance() {
+func (Tokenizer) Advance() {
 	/*Gets the next token from the input
 	and makes it the current token. This
 	method should only be called if
@@ -18,35 +22,35 @@ func Advance() {
 	there is no current token.*/
 }
 
-func TokenType() {
+func (Tokenizer) TokenType() {
 	//Returns the type of the current token
 }
 
-func keyWord() {
+func (Tokenizer) keyWord() {
 	/*Returns the keyword which is the
 	current token. Should be called only
 	when tokenType() is KEYWORD.*/
 }
 
-func Symbol() {
+func (Tokenizer) Symbol() {
 	/*Returns the character which is the
 	current token. Should be called only
 	when tokenType() is SYMBOL.*/
 }
 
-func Identifier() {
+func (Tokenizer) Identifier() {
 	/*Returns the identifier which is the
 	current token. Should be called only
 	when tokenType() is IDENTIFIER.*/
 }
 
-func IntVal() {
+func (Tokenizer) IntVal() {
 	/*Returns the integer value of the
 	current token. Should be called only
 	when tokenType() is INT_CONST.*/
 }
 
-func StringVal() {
+func (Tokenizer) StringVal() {
 	/* Returns the string value of the current
 	token, without the double quotes.
 	Should be called only when
