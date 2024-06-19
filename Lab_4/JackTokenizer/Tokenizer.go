@@ -28,7 +28,7 @@ func (X *Tokenizer) TokenType() {
 	//Returns the type of the current token
 }
 
-func (X *Tokenizer) keyWord() {
+func (X Tokenizer) keyWord() {
 	/*Returns the keyword which is the
 	current token. Should be called only
 	when tokenType() is KEYWORD.*/
