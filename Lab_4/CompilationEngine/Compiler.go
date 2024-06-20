@@ -204,5 +204,4 @@ func (X *comp) CompileTerm() {
 
 // Compiles a (possibly empty) comma-separated list of expressions.
 func (X *comp) CompileExpressionList() {
-	if X.tokenizer.TokenType() == "" {
 }

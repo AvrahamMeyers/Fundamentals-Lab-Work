@@ -38,7 +38,7 @@ func (X *Tokenizer) TokenType() string {
 }
 
 // Returns the keyword which is the current token. Should be called only
-// when tokenType() is KEYWORD.Possible return values:
+// when tokenType() is KEYWORD. Possible return values:
 // CLASS, METHOD, FUNCTION, CONSTRUCTOR, INT, BOOLEAN, CHAR, VOID,
 // VAR, STATIC, FIELD, LET, DO, IF, ELSE, WHILE,
 // RETURN, TRUE, FALSE, NULL, THIS
