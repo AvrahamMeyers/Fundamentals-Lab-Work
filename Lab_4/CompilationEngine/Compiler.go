@@ -102,6 +102,13 @@ func (X *comp) CompileClassVarDec() {
 	//it was already determined that the current token is static or field
 	helpWrite(X.write, X.token.Token, X.err, X.tabAmount)
 	X.token.Advance()
+
+	//type
+	if X.token.KeyWord() != "int" || X.token.KeyWord() != "char" || X.token.KeyWord() != "boolean" || X.token.TokenType() != "identifier" {
+		//throw an error
+		return
+	}
+	helpWrite(X.write, X.token.Token, X.err, X.tabAmount)
 	if X.token.TokenType() != "identifier" {
 		//throw an error
 		return
