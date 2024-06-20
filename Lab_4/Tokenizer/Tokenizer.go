@@ -3,6 +3,7 @@ package Tokenizer
 //import "os"
 
 type Tokenizer struct {
+	Token string
 	//as an example
 	//fp os.File
 	//here we may want items such as current token file pointer
@@ -27,20 +28,23 @@ func (X *Tokenizer) Advance() {
 	there is no current token.*/
 }
 
-func (X *Tokenizer) TokenType() {
+func (X *Tokenizer) TokenType() string {
 	//Returns the type of the current token
+	return ""
 }
 
-func (X Tokenizer) keyWord() {
+func (X Tokenizer) KeyWord() string {
 	/*Returns the keyword which is the
 	current token. Should be called only
 	when tokenType() is KEYWORD.*/
+	return ""
 }
 
-func (X *Tokenizer) Symbol() {
+func (X *Tokenizer) Symbol() string {
 	/*Returns the character which is the
 	current token. Should be called only
 	when tokenType() is SYMBOL.*/
+	return ""
 }
 
 func (X *Tokenizer) Identifier() {
