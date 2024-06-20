@@ -94,9 +94,37 @@ func (X *comp) CompileClass() {
 	}
 }
 
+/*
+Compiles a static declaration or
+a field declaration.
+*/
 func (X *comp) CompileClassVarDec() {
-	/*Compiles a static declaration or
-	a field declaration.*/
+	//it was already determined that the current token is static or field
+	helpWrite(X.write, X.token.Token, X.err, X.tabAmount)
+	X.token.Advance()
+	if X.token.TokenType() != "identifier" {
+		//throw an error
+		return
+	}
+	X.CompileTerm()
+	X.token.Advance()
+	for X.token.Symbol() == "," {
+		helpWrite(X.write, X.token.Token, X.err, X.tabAmount)
+		X.token.Advance()
+		if X.token.TokenType() != "identifier" {
+			//throw an error
+			return
+		}
+		X.CompileTerm()
+		X.token.Advance()
+	}
+	if X.token.Symbol() != "," {
+		//throw an error
+		return
+	}
+	helpWrite(X.write, X.token.Token, X.err, X.tabAmount)
+	X.token.Advance()
+
 }
 
 func (X *comp) CompileSubroutine() {
