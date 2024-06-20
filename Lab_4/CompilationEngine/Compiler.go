@@ -7,6 +7,7 @@ import (
 	"github.com/AvrahamMeyers/Fundamentals-Lab-Work/Lab_4/Tokenizer"
 )
 
+// Function that writes to a file
 // remember the file needs to be open for append
 func helpWrite(file *os.File, text string, err error, tab int) {
 	tabs := ""
@@ -20,9 +21,13 @@ func helpWrite(file *os.File, text string, err error, tab int) {
 	}
 }
 
+// Holds information about the compiler
+// Tokenizer object holds the current token
+// file is the file that the xml will be written to
+// tabAmount is the indentation level of the current line
 type comp struct {
-	token     Tokenizer.Tokenizer
-	write     *os.File
+	tokenizer Tokenizer.Tokenizer
+	file      *os.File
 	err       error
 	tabAmount int
 }
@@ -33,9 +38,9 @@ func (X *comp) Constructor(fileName string, err error) {
 		return
 	}
 	defer file.Close()
-	X.write = file
+	X.file = file
 	X.err = err
-	X.token.Constructor(fileName)
+	X.tokenizer.Constructor(fileName)
 	//A jack program will always begin with the word class
 	X.CompileClass()
 	X.tabAmount = 0
@@ -44,50 +49,50 @@ func (X *comp) Constructor(fileName string, err error) {
 // Compiles a complete class.
 func (X *comp) CompileClass() {
 	// class: 'class'className'{'classVarDec*subroutineDec*'}'
-	if X.token.TokenType() == "class" {
-		helpWrite(X.write, "<class>\n", X.err, X.tabAmount)
+	if X.tokenizer.TokenType() == "class" {
+		helpWrite(X.file, "<class>\n", X.err, X.tabAmount)
 		X.tabAmount += 1
 		//'class'
-		helpWrite(X.write, X.token.Token, X.err, X.tabAmount)
-		X.token.Advance()
+		helpWrite(X.file, X.tokenizer.Token, X.err, X.tabAmount)
+		X.tokenizer.Advance()
 
 		//className (identifier)
-		if X.token.TokenType() != "identifier" {
+		if X.tokenizer.TokenType() != "identifier" {
 			//throw an error
 			return
 		}
 		X.CompileTerm()
-		X.token.Advance()
+		X.tokenizer.Advance()
 		//symbol {
-		if X.token.Symbol() != "{" {
+		if X.tokenizer.Symbol() != "{" {
 			//throw an error
 			return
 		}
-		helpWrite(X.write, X.token.Token, X.err, X.tabAmount)
-		X.token.Advance()
-		for X.token.KeyWord() == "static" || X.token.KeyWord() == "field" {
-			helpWrite(X.write, "<classVarDec>\n", X.err, X.tabAmount)
+		helpWrite(X.file, X.tokenizer.Token, X.err, X.tabAmount)
+		X.tokenizer.Advance()
+		for X.tokenizer.KeyWord() == "static" || X.tokenizer.KeyWord() == "field" {
+			helpWrite(X.file, "<classVarDec>\n", X.err, X.tabAmount)
 			X.tabAmount += 1
 			X.CompileClassVarDec()
 			X.tabAmount -= 1
-			helpWrite(X.write, "</classVarDec>\n", X.err, X.tabAmount)
+			helpWrite(X.file, "</classVarDec>\n", X.err, X.tabAmount)
 		}
-		for X.token.KeyWord() == "constructor" || X.token.KeyWord() == "function" || X.token.KeyWord() == "method" {
-			helpWrite(X.write, "<subroutineDec>\n", X.err, X.tabAmount)
+		for X.tokenizer.KeyWord() == "constructor" || X.tokenizer.KeyWord() == "function" || X.tokenizer.KeyWord() == "method" {
+			helpWrite(X.file, "<subroutineDec>\n", X.err, X.tabAmount)
 			X.tabAmount += 1
 			X.CompileSubroutine()
 			X.tabAmount -= 1
-			helpWrite(X.write, "</subroutineDec>\n", X.err, X.tabAmount)
+			helpWrite(X.file, "</subroutineDec>\n", X.err, X.tabAmount)
 		}
 
 		//at this point we have reached the end of the class and should only have '}' left
-		if X.token.Symbol() != "}" {
+		if X.tokenizer.Symbol() != "}" {
 			//throw an error
 			return
 		}
-		helpWrite(X.write, X.token.Token, X.err, X.tabAmount)
+		helpWrite(X.file, X.tokenizer.Token, X.err, X.tabAmount)
 		X.tabAmount -= 1
-		helpWrite(X.write, "</class>\n", X.err, X.tabAmount)
+		helpWrite(X.file, "</class>\n", X.err, X.tabAmount)
 
 	} else {
 		fmt.Println("There's a problem with the file it does not begin with class")
@@ -100,37 +105,37 @@ a field declaration.
 */
 func (X *comp) CompileClassVarDec() {
 	//it was already determined that the current token is static or field
-	helpWrite(X.write, X.token.Token, X.err, X.tabAmount)
-	X.token.Advance()
+	helpWrite(X.file, X.tokenizer.Token, X.err, X.tabAmount)
+	X.tokenizer.Advance()
 
 	//type
-	if X.token.KeyWord() != "int" || X.token.KeyWord() != "char" || X.token.KeyWord() != "boolean" || X.token.TokenType() != "identifier" {
+	if X.tokenizer.KeyWord() != "int" || X.tokenizer.KeyWord() != "char" || X.tokenizer.KeyWord() != "boolean" || X.tokenizer.TokenType() != "identifier" {
 		//throw an error
 		return
 	}
-	helpWrite(X.write, X.token.Token, X.err, X.tabAmount)
-	if X.token.TokenType() != "identifier" {
+	helpWrite(X.file, X.tokenizer.Token, X.err, X.tabAmount)
+	if X.tokenizer.TokenType() != "identifier" {
 		//throw an error
 		return
 	}
 	X.CompileTerm()
-	X.token.Advance()
-	for X.token.Symbol() == "," {
-		helpWrite(X.write, X.token.Token, X.err, X.tabAmount)
-		X.token.Advance()
-		if X.token.TokenType() != "identifier" {
+	X.tokenizer.Advance()
+	for X.tokenizer.Symbol() == "," {
+		helpWrite(X.file, X.tokenizer.Token, X.err, X.tabAmount)
+		X.tokenizer.Advance()
+		if X.tokenizer.TokenType() != "identifier" {
 			//throw an error
 			return
 		}
 		X.CompileTerm()
-		X.token.Advance()
+		X.tokenizer.Advance()
 	}
-	if X.token.Symbol() != "," {
+	if X.tokenizer.Symbol() != "," {
 		//throw an error
 		return
 	}
-	helpWrite(X.write, X.token.Token, X.err, X.tabAmount)
-	X.token.Advance()
+	helpWrite(X.file, X.tokenizer.Token, X.err, X.tabAmount)
+	X.tokenizer.Advance()
 
 }
 
