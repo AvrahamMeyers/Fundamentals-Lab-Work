@@ -205,14 +205,16 @@ func (X *comp) CompileExpression() {
 func (X *comp) CompileTerm() {
 	helpWrite(X.file, "<term>\n", X.err, X.tabAmount)
 	X.tabAmount += 1
-	// integerConstant
-	if X.tokenizer.TokenType() == "INT_CONST" {
+
+	// These may be handled differently in the next project by passing for
+	// example an int with tokenizer.IntVal, so keeping with seperate if statements
+	if X.tokenizer.TokenType() == "INT_CONST" { // integerConstant
 		helpWrite(X.file, X.tokenizer.Token, X.err, X.tabAmount)
 
-	} else if X.tokenizer.TokenType() == "stringConstant" { // stringConstant
+	} else if X.tokenizer.TokenType() == "STRING_CONST" { // stringConstant
 		helpWrite(X.file, X.tokenizer.Token, X.err, X.tabAmount)
 
-	} else if X.tokenizer.TokenType() == "keyword" { // keywordConstant
+	} else if X.tokenizer.TokenType() == "KEYWORD" { // keywordConstant
 		helpWrite(X.file, X.tokenizer.Token, X.err, X.tabAmount)
 
 	}
