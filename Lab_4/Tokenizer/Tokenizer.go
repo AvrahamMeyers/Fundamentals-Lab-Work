@@ -29,15 +29,19 @@ func (X *Tokenizer) Advance() {
 
 }
 
-//Returns the type of the current token
+// Returns the type of the current token.
+// Possible return values:
+// KEYWORD, SYMBOL, IDENTIFIER, INT_CONST, STRING_CONST
 func (X *Tokenizer) TokenType() string {
 
 	return ""
 }
 
-//Returns the keyword which is the
-//current token. Should be called only
-//when tokenType() is KEYWORD.
+// Returns the keyword which is the current token. Should be called only
+// when tokenType() is KEYWORD.Possible return values:
+// CLASS, METHOD, FUNCTION, CONSTRUCTOR, INT, BOOLEAN, CHAR, VOID,
+// VAR, STATIC, FIELD, LET, DO, IF, ELSE, WHILE,
+// RETURN, TRUE, FALSE, NULL, THIS
 func (X Tokenizer) KeyWord() string {
 
 	return ""
