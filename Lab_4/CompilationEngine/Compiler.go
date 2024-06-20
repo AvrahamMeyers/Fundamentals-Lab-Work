@@ -1,23 +1,90 @@
 package compilationengine
 
 import (
+	"fmt"
+	"os"
+
 	"github.com/AvrahamMeyers/Fundamentals-Lab-Work/Lab_4/Tokenizer"
 )
 
+// remember the file needs to be open for append
+func helpWrite(file *os.File, text string, err error, tab int) {
+	tabs := ""
+	for i := 0; i < tab; i++ {
+		tabs += "\t"
+	}
+	_, err = file.WriteString(tabs + text)
+	if err != nil {
+		fmt.Println("Error writing to file:", err)
+		return
+	}
+}
+
 type comp struct {
-	token Tokenizer.Tokenizer
+	token     Tokenizer.Tokenizer
+	write     *os.File
+	err       error
+	tabAmount int
 }
 
-func (X *comp) Constructor() {
-	/*Creates a new compilation
-	engine with the given input and
-	output. The next routine called
-	must be compileClass()..*/
-
+func (X *comp) Constructor(fileName string, writeTo *os.File, err error) {
+	X.write = writeTo
+	X.err = err
+	X.token.Constructor(fileName)
+	//A jack program will always begin with the word class
+	X.CompileClass()
+	X.tabAmount = 0
 }
 
+// Compiles a complete class.
 func (X *comp) CompileClass() {
-	//Compiles a complete class.
+	// class: 'class'className'{'classVarDec*subroutineDec*'}'
+	if X.token.TokenType() == "class" {
+		helpWrite(X.write, "<class>\n", X.err, X.tabAmount)
+		X.tabAmount += 1
+		//'class'
+		helpWrite(X.write, X.token.Token, X.err, X.tabAmount)
+		X.token.Advance()
+
+		//className (identifier)
+		if X.token.TokenType() != "identifier" {
+			//throw an error
+			return
+		}
+		X.CompileTerm()
+		X.token.Advance()
+		//symbol {
+		if X.token.Symbol() != "{" {
+			//throw an error
+			return
+		}
+		helpWrite(X.write, X.token.Token, X.err, X.tabAmount)
+		X.token.Advance()
+		for X.token.KeyWord() == "static" || X.token.KeyWord() == "field" {
+			helpWrite(X.write, "<classVarDec>\n", X.err, X.tabAmount)
+			X.tabAmount += 1
+			X.CompileClassVarDec()
+			X.tabAmount -= 1
+			helpWrite(X.write, "</classVarDec>\n", X.err, X.tabAmount)
+		}
+		for X.token.KeyWord() == "constructor" || X.token.KeyWord() == "function" || X.token.KeyWord() == "method" {
+			helpWrite(X.write, "<subroutineDec>\n", X.err, X.tabAmount)
+			X.tabAmount += 1
+			X.CompileSubroutine()
+			X.tabAmount -= 1
+			helpWrite(X.write, "</subroutineDec>\n", X.err, X.tabAmount)
+		}
+
+		//at this point we have reached the end of the class and should only have '}' left
+		if X.token.Symbol() != "}" {
+			//throw an error
+			return
+		}
+		helpWrite(X.write, X.token.Token, X.err, X.tabAmount)
+
+	} else {
+		fmt.Println("There's a problem with the file it does not begin with class")
+	}
 }
 
 func (X *comp) CompileClassVarDec() {
