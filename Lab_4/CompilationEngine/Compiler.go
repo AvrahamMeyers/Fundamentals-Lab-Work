@@ -71,18 +71,10 @@ func (X *comp) CompileClass() {
 		helpWrite(X.file, X.tokenizer.Token, X.err, X.tabAmount)
 		X.tokenizer.Advance()
 		for X.tokenizer.KeyWord() == "static" || X.tokenizer.KeyWord() == "field" {
-			helpWrite(X.file, "<classVarDec>\n", X.err, X.tabAmount)
-			X.tabAmount += 1
 			X.CompileClassVarDec()
-			X.tabAmount -= 1
-			helpWrite(X.file, "</classVarDec>\n", X.err, X.tabAmount)
 		}
 		for X.tokenizer.KeyWord() == "constructor" || X.tokenizer.KeyWord() == "function" || X.tokenizer.KeyWord() == "method" {
-			helpWrite(X.file, "<subroutineDec>\n", X.err, X.tabAmount)
-			X.tabAmount += 1
 			X.CompileSubroutine()
-			X.tabAmount -= 1
-			helpWrite(X.file, "</subroutineDec>\n", X.err, X.tabAmount)
 		}
 
 		//at this point we have reached the end of the class and should only have '}' left
@@ -104,6 +96,8 @@ Compiles a static declaration or
 a field declaration.
 */
 func (X *comp) CompileClassVarDec() {
+	helpWrite(X.file, "<classVarDec>\n", X.err, X.tabAmount)
+	X.tabAmount += 1
 	//it was already determined that the current token is static or field
 	helpWrite(X.file, X.tokenizer.Token, X.err, X.tabAmount)
 	X.tokenizer.Advance()
@@ -136,13 +130,20 @@ func (X *comp) CompileClassVarDec() {
 	}
 	helpWrite(X.file, X.tokenizer.Token, X.err, X.tabAmount)
 	X.tokenizer.Advance()
-
+	X.tabAmount -= 1
+	helpWrite(X.file, "</classVarDec>\n", X.err, X.tabAmount)
 }
 
 // Compiles a complete method,
 // function, or constructor.
 func (X *comp) CompileSubroutine() {
+	helpWrite(X.file, "<subroutineDec>\n", X.err, X.tabAmount)
+	X.tabAmount += 1
 
+	// TODO: implement rest of function
+
+	X.tabAmount -= 1
+	helpWrite(X.file, "</subroutineDec>\n", X.err, X.tabAmount)
 }
 
 // Compiles a (possibly empty) parameter list, not including the enclosing ‘‘()’’.
@@ -192,14 +193,57 @@ func (X *comp) CompileExpression() {
 
 // Compiles a term. This routine is faced with a slight difficulty
 // when trying to decide between some of the alternative parsing
-// rules. Specifically, if the current token is an identifier, the routine
+// rules. Specifically, if the current token is an identifier, the
 // routine must distinguish between a variable, an array entry, and a
 // subroutine call. A single look ahead token, which may be one
 // of ‘‘[’’, ‘‘(’’, or ‘‘.’’ suffices to distinguish between the three
 // possibilities. Any other token is not part of this term and
-// should not be advanced over.
+// should not be advanced over. Follows grammar:
+// integerConstant | stringConstant | keywordConstant | varName | varName '[' expression ']' |
+//
+//	subroutineCall | '(' expression ')' | unaryOp term
 func (X *comp) CompileTerm() {
+	helpWrite(X.file, "<term>\n", X.err, X.tabAmount)
+	X.tabAmount += 1
+	// integerConstant
+	if X.tokenizer.TokenType() == "INT_CONST" {
+		helpWrite(X.file, X.tokenizer.Token, X.err, X.tabAmount)
 
+	} else if X.tokenizer.TokenType() == "stringConstant" { // stringConstant
+		helpWrite(X.file, X.tokenizer.Token, X.err, X.tabAmount)
+
+	} else if X.tokenizer.TokenType() == "keyword" { // keywordConstant
+		helpWrite(X.file, X.tokenizer.Token, X.err, X.tabAmount)
+
+	}
+	// // varName //TODO: FIX
+	// if X.tokenizer.TokenType() == "identifier" {
+	// 	helpWrite(X.file, "<term>\n", X.err, X.tabAmount)
+	// 	X.tabAmount += 1
+	// 	helpWrite(X.file, X.tokenizer.Token, X.err, X.tabAmount)
+	// 	X.tabAmount -= 1
+	// 	helpWrite(X.file, "</term>\n", X.err, X.tabAmount)
+	// 	return
+	// }
+	// // varName '[' expression ']'
+	// if X.tokenizer.TokenType() == "identifier" {
+	// 	helpWrite(X.file, "<term>\n", X.err, X.tabAmount)
+	// 	X.tabAmount += 1
+	// 	helpWrite(X.file, X.tokenizer.Token, X.err, X.tabAmount)
+	// 	X.tokenizer.Advance()
+	// 	if X.tokenizer.Symbol() != "[" {
+	// 		//throw an error
+	// 		return
+	// 	}
+	// 	helpWrite(X.file, X.tokenizer.Token, X.err, X.tabAmount)
+	// 	X.CompileExpression()
+	// 	X.tokenizer.Advance()
+	// 	if X.tokenizer.Symbol() != "]" {
+	// 		//throw an error
+	// 		return
+	// 	}
+	X.tabAmount -= 1
+	helpWrite(X.file, "</term>\n", X.err, X.tabAmount)
 }
 
 // Compiles a (possibly empty) comma-separated list of expressions.
@@ -207,8 +251,11 @@ func (X *comp) CompileTerm() {
 func (X *comp) CompileExpressionList() {
 	// As expressionLists always have a ')' after, check if it does, if so the expression list is empty
 	if X.tokenizer.Symbol() == ")" {
+		helpWrite(X.file, "<expressionList> </expressionList>\n", X.err, X.tabAmount)
 		return
 	}
+	helpWrite(X.file, "<expressionList>\n", X.err, X.tabAmount)
+	X.tabAmount += 1
 	// expression
 	X.CompileExpression()
 	X.tokenizer.Advance()
@@ -220,5 +267,6 @@ func (X *comp) CompileExpressionList() {
 		X.CompileExpression()
 		X.tokenizer.Advance()
 	}
-
+	X.tabAmount -= 1
+	helpWrite(X.file, "</expressionList>\n", X.err, X.tabAmount)
 }
