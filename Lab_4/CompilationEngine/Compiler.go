@@ -7,7 +7,7 @@ import (
 	"github.com/AvrahamMeyers/Fundamentals-Lab-Work/Lab_4/Tokenizer"
 )
 
-// Function that writes to a file
+// Helper function that writes to a file
 // remember the file needs to be open for append
 func helpWrite(file *os.File, text string, err error, tab int) {
 	tabs := ""
@@ -197,11 +197,28 @@ func (X *comp) CompileExpression() {
 // subroutine call. A single look ahead token, which may be one
 // of ‘‘[’’, ‘‘(’’, or ‘‘.’’ suffices to distinguish between the three
 // possibilities. Any other token is not part of this term and
-// should not be advanced over.*/
+// should not be advanced over.
 func (X *comp) CompileTerm() {
 
 }
 
 // Compiles a (possibly empty) comma-separated list of expressions.
+// Follows grammar: (expression (',' expression)* )?
 func (X *comp) CompileExpressionList() {
+	// As expressionLists always have a ')' after, check if it does, if so the expression list is empty
+	if X.tokenizer.Symbol() == ")" {
+		return
+	}
+	// expression
+	X.CompileExpression()
+	X.tokenizer.Advance()
+
+	//(',' expression)*
+	for X.tokenizer.Symbol() == "," {
+		helpWrite(X.file, X.tokenizer.Token, X.err, X.tabAmount) // write the comma
+		X.tokenizer.Advance()
+		X.CompileExpression()
+		X.tokenizer.Advance()
+	}
+
 }
