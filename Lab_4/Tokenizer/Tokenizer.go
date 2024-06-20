@@ -1,11 +1,14 @@
-package jacktokenizer
+package Tokenizer
+
+//import "os"
 
 type Tokenizer struct {
-	h int //as an example
+	//as an example
+	//fp os.File
 	//here we may want items such as current token file pointer
 }
 
-func (X *Tokenizer) Constructor() {
+func (X *Tokenizer) Constructor(fileName string) {
 	/*Opens the input file/stream and gets
 	ready to tokenize it.*/
 

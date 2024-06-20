@@ -1,6 +1,11 @@
 package compilationengine
 
+import (
+	"github.com/AvrahamMeyers/Fundamentals-Lab-Work/Lab_4/Tokenizer"
+)
+
 type comp struct {
+	token Tokenizer.Tokenizer
 }
 
 func (X *comp) Constructor() {
