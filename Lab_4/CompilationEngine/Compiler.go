@@ -134,9 +134,10 @@ func (X *comp) CompileClassVarDec() {
 
 }
 
+// Compiles a complete method,
+// function, or constructor.
 func (X *comp) CompileSubroutine() {
-	//Compiles a complete method,
-	//function, or constructor.
+
 }
 
 func (X *comp) CompileParameterList() {
