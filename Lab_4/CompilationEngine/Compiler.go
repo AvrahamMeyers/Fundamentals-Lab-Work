@@ -27,8 +27,13 @@ type comp struct {
 	tabAmount int
 }
 
-func (X *comp) Constructor(fileName string, writeTo *os.File, err error) {
-	X.write = writeTo
+func (X *comp) Constructor(fileName string, err error) {
+	file, err := os.OpenFile(fileName+".xml", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	if err != nil {
+		return
+	}
+	defer file.Close()
+	X.write = file
 	X.err = err
 	X.token.Constructor(fileName)
 	//A jack program will always begin with the word class
@@ -81,6 +86,8 @@ func (X *comp) CompileClass() {
 			return
 		}
 		helpWrite(X.write, X.token.Token, X.err, X.tabAmount)
+		X.tabAmount -= 1
+		helpWrite(X.write, "</class>\n", X.err, X.tabAmount)
 
 	} else {
 		fmt.Println("There's a problem with the file it does not begin with class")
