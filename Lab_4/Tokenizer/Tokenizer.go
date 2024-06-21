@@ -6,7 +6,202 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"unicode"
 )
+
+type Tokenizer struct {
+	Token    string
+	Filetext string
+	FilePos  int
+}
+
+func (X *Tokenizer) Constructor(fileName string, folderpath string) {
+	/*Opens the input file/stream and gets
+	ready to tokenize it.*/
+	file_path := folderpath + "/" + fileName
+	file, err := os.ReadFile(file_path)
+	if err != nil {
+		fmt.Println("Error opening file: ", fileName, err)
+		return
+	}
+	X.Filetext = removeComments(string(file))
+	X.Token = ""
+	X.FilePos = 0
+}
+
+// Do we have more tokens in the input?
+func (X *Tokenizer) HasMoreTokens() bool {
+	return X.FilePos < len(X.Filetext)
+}
+
+// skipWhitespace skips whitespace characters in the input
+func (t *Tokenizer) skipWhitespace() {
+	for t.FilePos < len(t.Filetext) && unicode.IsSpace(rune(t.Filetext[t.FilePos])) {
+		t.FilePos++
+	}
+}
+
+// Gets the next token from the input
+// and makes it the current token. This
+// method should only be called if
+// hasMoreTokens() is true. Initially
+// there is no current token.
+// Advance moves to the next token and updates the current token
+func (t *Tokenizer) Advance() {
+	t.skipWhitespace()
+	if !t.HasMoreTokens() {
+		return
+	}
+
+	var tokenValue strings.Builder
+	ch := string(t.Filetext[t.FilePos])
+
+	// Handle symbols
+	if isSymbol(ch) {
+		t.Token = ch
+		t.FilePos++
+		return
+	}
+
+	// Handle string constants
+	runeCh := rune(ch[0])
+	if runeCh == '"' {
+		t.FilePos++
+		for t.FilePos < len(t.Filetext) && rune(t.Filetext[t.FilePos]) != '"' {
+			tokenValue.WriteByte(t.Filetext[t.FilePos])
+			t.FilePos++
+		}
+		t.Token = tokenValue.String()
+		t.FilePos++ // Skip closing quote
+		return
+	}
+
+	// Handle integer constants
+	if unicode.IsDigit(runeCh) {
+		for t.FilePos < len(t.Filetext) && unicode.IsDigit(rune(t.Filetext[t.FilePos])) {
+			tokenValue.WriteByte(t.Filetext[t.FilePos])
+			t.FilePos++
+		}
+		t.Token = tokenValue.String()
+		return
+	}
+
+	// Handle identifiers and keywords
+	if unicode.IsLetter(runeCh) || runeCh == '_' {
+		for t.FilePos < len(t.Filetext) &&
+			(unicode.IsLetter(rune(t.Filetext[t.FilePos])) ||
+				unicode.IsDigit(rune(t.Filetext[t.FilePos])) ||
+				rune(t.Filetext[t.FilePos]) == '_') {
+			tokenValue.WriteByte(t.Filetext[t.FilePos])
+			t.FilePos++
+		}
+		value := tokenValue.String()
+		t.Token = value
+		return
+	}
+
+	// Unexpected character
+	fmt.Printf("Unexpected character: %c\n", runeCh)
+	t.FilePos++
+}
+
+// Returns the type of the current token.
+// Possible return values:
+// KEYWORD, SYMBOL, IDENTIFIER, INT_CONST, STRING_CONST
+func (X *Tokenizer) TokenType() string {
+	if isKeyWord(X.Token) {
+		return "KEYWORD"
+	}
+	if isSymbol(X.Token) {
+		return "SYMBOL"
+	}
+	if isIdentifier(X.Token) {
+		return "IDENTIFIER"
+	}
+	if isInt_Const(X.Token) {
+		return "INT_CONST"
+	}
+	if isString_Const(X.Token) {
+		return "STRING_CONST"
+	}
+	return ""
+}
+
+// Returns the keyword which is the current token. Should be called only
+// when tokenType() is KEYWORD. Possible return values:
+// CLASS, METHOD, FUNCTION, CONSTRUCTOR, INT, BOOLEAN, CHAR, VOID,
+// VAR, STATIC, FIELD, LET, DO, IF, ELSE, WHILE,
+// RETURN, TRUE, FALSE, NULL, THIS
+// e.g. <keyword> CLASS </keyword>
+func (X Tokenizer) KeyWord() string {
+	return strings.ToLower(X.Token)
+}
+
+// Returns the character which is the
+// current token. Should be called only
+// when tokenType() is SYMBOL. e.g. <symbol> + </symbol>
+func (X *Tokenizer) Symbol() string {
+	return convertSymbolForXML(X.Token)
+}
+
+// Returns the identifier which is the
+// current token. Should be called only
+// when tokenType() is IDENTIFIER. e.g. <identifier> varName </identifier>
+func (X *Tokenizer) Identifier() string {
+	return X.Token
+}
+
+// Returns the integer value of the
+// current token. Should be called only
+// when tokenType() is INT_CONST. e.g. <integerConstant> 33 </integerConstant>
+func (X *Tokenizer) IntVal() int {
+	num, err := strconv.Atoi(X.Token)
+	if err != nil {
+		fmt.Println("Error converting string to integer:", err)
+		return 0
+	}
+	return num
+}
+
+// Returns the string value of the current
+// token, without the double quotes.
+// Should be called only when
+// tokenType() is STRING_CONST. e.g. <stringConstant> foo </stringConstant>
+func (X *Tokenizer) StringVal() string {
+	return removeQuotes(X.Token)
+}
+
+func (X *Tokenizer) formatTokenString() string {
+	if X.TokenType() == "KEYWORD" {
+		return "<keyword> " + X.KeyWord() + " </keyword>\n"
+	}
+	if X.TokenType() == "IDENTIFIER" {
+		return "<identifier> " + X.Identifier() + " </identifier>\n"
+	}
+	if X.TokenType() == "SYMBOL" {
+		return "<symbol> " + X.Symbol() + " </symbol>\n"
+	}
+	if X.TokenType() == "INT_CONST" {
+		return "<integerConstant> " + fmt.Sprint(X.IntVal()) + " </integerConstant>\n"
+	}
+	if X.TokenType() == "STRING_CONST" {
+		return "<stringConstant> " + X.StringVal() + " </stringConstant>\n"
+	}
+	return "invalid token"
+}
+
+func (X *Tokenizer) TokenizeFile() string {
+	final_str := "<tokens>\n"
+
+	for X.HasMoreTokens() {
+		final_str += X.formatTokenString()
+		X.Advance()
+	}
+	final_str += X.formatTokenString()
+	final_str += "</tokens>"
+
+	return final_str
+}
 
 func removeComments(text string) string {
 	// Compile the regular expression for block comments
@@ -52,7 +247,7 @@ func inList(text string, list []string) bool {
 
 func isKeyWord(text string) bool {
 	/*Check if the provided word is equal to one of the keywords.*/
-	keywords := []string{"class", "constructor", "function", "method", "field", "static", "var",
+	keywords := []string{"class", "Class", "constructor", "function", "method", "field", "static", "var",
 		"int", "char", "boolean", "void", "true", "false", "null", "this",
 		"let", "do", "if", "else", "while", "return"}
 	return inList(text, keywords)
@@ -104,7 +299,7 @@ func isInt_Const(text string) bool {
 
 func isString_Const(text string) bool {
 	// Compile the regular expression
-	re, err := regexp.Compile(`"[^\"\n]*"`)
+	re, err := regexp.Compile(`[^\"\n]*`)
 	if err != nil {
 		fmt.Println("Error compiling regex:", err)
 		return false
@@ -136,120 +331,7 @@ func convertSymbolForXML(symbol string) string {
 	return symbol
 }
 
-type Tokenizer struct {
-	Token    string
-	Filetext string
-	//as an example
-	//fp os.File
-	//here we may want items such as current token file pointer
-}
-
-func (X *Tokenizer) Constructor(fileName string, folderpath string) {
-	/*Opens the input file/stream and gets
-	ready to tokenize it.*/
-	file_path := folderpath + "/" + fileName
-	file, err := os.ReadFile(file_path)
-	if err != nil {
-		fmt.Println("Error opening file: ", fileName, err)
-		return
-	}
-	X.Filetext = removeComments(string(file))
-	X.Token = ""
-}
-
-// Do we have more tokens in the input?
-func (X *Tokenizer) HasMoreTokens() bool {
-	return false
-}
-
-// Gets the next token from the input
-// and makes it the current token. This
-// method should only be called if
-// hasMoreTokens() is true. Initially
-// there is no current token.
-func (X *Tokenizer) Advance() {
-	if X.HasMoreTokens() {
-
-	}
-
-}
-
-// Returns the type of the current token.
-// Possible return values:
-// KEYWORD, SYMBOL, IDENTIFIER, INT_CONST, STRING_CONST
-func (X *Tokenizer) TokenType() string {
-	if isKeyWord(X.Token) {
-		return "KEYWORD"
-	}
-	if isSymbol(X.Token) {
-		return "SYMBOL"
-	}
-	if isIdentifier(X.Token) {
-		return "IDENTIFIER"
-	}
-	if isInt_Const(X.Token) {
-		return "INT_CONST"
-	}
-	if isString_Const(X.Token) {
-		return "STRING_CONST"
-	}
-	return ""
-}
-
-// Returns the keyword which is the current token. Should be called only
-// when tokenType() is KEYWORD. Possible return values:
-// CLASS, METHOD, FUNCTION, CONSTRUCTOR, INT, BOOLEAN, CHAR, VOID,
-// VAR, STATIC, FIELD, LET, DO, IF, ELSE, WHILE,
-// RETURN, TRUE, FALSE, NULL, THIS
-// e.g. <keyword> CLASS </keyword>
-func (X Tokenizer) KeyWord() string {
-	return strings.ToUpper(X.Token)
-
-	/*
-		if isKeyWord(X.Token) {
-			return strings.ToUpper(X.Token)
-		}
-		return ""
-	*/
-}
-
-// Returns the character which is the
-// current token. Should be called only
-// when tokenType() is SYMBOL. e.g. <symbol> + </symbol>
-func (X *Tokenizer) Symbol() string {
-	return convertSymbolForXML(X.Token)
-
-	/*
-		if isSymbol(X.Token) {
-			return convertSymbolForXML(X.Token)
-		}
-		return ""
-	*/
-}
-
-// Returns the identifier which is the
-// current token. Should be called only
-// when tokenType() is IDENTIFIER. e.g. <identifier> varName </identifier>
-func (X *Tokenizer) Identifier() string {
-	return X.Token
-}
-
-// Returns the integer value of the
-// current token. Should be called only
-// when tokenType() is INT_CONST. e.g. <integerConstant> 33 </integerConstant>
-func (X *Tokenizer) IntVal() int {
-	num, err := strconv.Atoi(X.Token)
-	if err != nil {
-		fmt.Println("Error converting string to integer:", err)
-		return 0
-	}
-	return num
-}
-
-// Returns the string value of the current
-// token, without the double quotes.
-// Should be called only when
-// tokenType() is STRING_CONST. e.g. <stringConstant> foo </stringConstant>
-func (X *Tokenizer) StringVal() string {
-	return ""
+func removeQuotes(s string) string {
+	// Trim leading and trailing double quotes
+	return strings.Trim(s, `"`)
 }

@@ -1,10 +1,8 @@
-This is a line.
-/* This is a 
-multiline comment. */
-This is another line.
-/** Another 
-multiline comment. */
-This line has a // comment.
-// This is a comment line.
-This is a final line.
-more quotes "asdfasd"
+Class Bar {
+    method Fraction foo(int y) {
+        var int temp, int variable; // a variable
+        let temp = (xxx+12)*-63; 
+        let variable = true & false;
+        let word = "hello world" < "l" > "K";
+    }
+}
