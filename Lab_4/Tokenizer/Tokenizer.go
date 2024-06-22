@@ -132,28 +132,27 @@ func (X *Tokenizer) TokenType() string {
 // CLASS, METHOD, FUNCTION, CONSTRUCTOR, INT, BOOLEAN, CHAR, VOID,
 // VAR, STATIC, FIELD, LET, DO, IF, ELSE, WHILE,
 // RETURN, TRUE, FALSE, NULL, THIS
-// e.g. <keyword> CLASS </keyword>
 func (X Tokenizer) KeyWord() string {
 	return strings.ToLower(X.Token)
 }
 
 // Returns the character which is the
 // current token. Should be called only
-// when tokenType() is SYMBOL. e.g. <symbol> + </symbol>
+// when tokenType() is SYMBOL.
 func (X *Tokenizer) Symbol() string {
 	return convertSymbolForXML(X.Token)
 }
 
 // Returns the identifier which is the
 // current token. Should be called only
-// when tokenType() is IDENTIFIER. e.g. <identifier> varName </identifier>
+// when tokenType() is IDENTIFIER.
 func (X *Tokenizer) Identifier() string {
 	return X.Token
 }
 
 // Returns the integer value of the
 // current token. Should be called only
-// when tokenType() is INT_CONST. e.g. <integerConstant> 33 </integerConstant>
+// when tokenType() is INT_CONST.
 func (X *Tokenizer) IntVal() int {
 	num, err := strconv.Atoi(X.Token)
 	if err != nil {
@@ -171,7 +170,13 @@ func (X *Tokenizer) StringVal() string {
 	return removeQuotes(X.Token)
 }
 
-func (X *Tokenizer) formatTokenString() string {
+// Returns the XML format of a token of the following types:
+// <keyword> CLASS </keyword>
+// <identifier> varName </identifier>
+// <symbol> + </symbol>
+// <integerConstant> 33 </integerConstant>
+// <stringConstant> foo </stringConstant>
+func (X *Tokenizer) FormatTokenString() string {
 	if X.TokenType() == "KEYWORD" {
 		return "<keyword> " + X.KeyWord() + " </keyword>\n"
 	}
@@ -194,10 +199,10 @@ func (X *Tokenizer) TokenizeFile() string {
 	final_str := "<tokens>\n"
 
 	for X.HasMoreTokens() {
-		final_str += X.formatTokenString()
+		final_str += X.FormatTokenString()
 		X.Advance()
 	}
-	final_str += X.formatTokenString()
+	final_str += X.FormatTokenString()
 	final_str += "</tokens>"
 
 	return final_str

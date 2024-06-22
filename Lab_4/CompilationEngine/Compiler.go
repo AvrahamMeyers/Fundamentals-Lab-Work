@@ -191,6 +191,11 @@ func (X *comp) CompileExpression() {
 
 }
 
+// Compiles a subroutine call
+func (X *comp) CompileSubroutineCall() {
+
+}
+
 // Compiles a term. This routine is faced with a slight difficulty
 // when trying to decide between some of the alternative parsing
 // rules. Specifically, if the current token is an identifier, the
@@ -206,44 +211,43 @@ func (X *comp) CompileTerm() {
 	helpWrite(X.file, "<term>\n", X.err, X.tabAmount)
 	X.tabAmount += 1
 
-	// These may be handled differently in the next project by passing for
-	// example an int with tokenizer.IntVal, so keeping with seperate if statements
-	if X.tokenizer.TokenType() == "INT_CONST" { // integerConstant
-		helpWrite(X.file, X.tokenizer.Token, X.err, X.tabAmount)
+	// write the first (and maybe only) token including possibly varName, '(', or unaryOp
+	helpWrite(X.file, X.tokenizer.FormatTokenString(), X.err, X.tabAmount)
 
-	} else if X.tokenizer.TokenType() == "STRING_CONST" { // stringConstant
-		helpWrite(X.file, X.tokenizer.Token, X.err, X.tabAmount)
+	var firstType string = X.tokenizer.TokenType()
+	var firstToken string = X.tokenizer.Token
+	X.tokenizer.Advance()
 
-	} else if X.tokenizer.TokenType() == "KEYWORD" { // keywordConstant
-		helpWrite(X.file, X.tokenizer.Token, X.err, X.tabAmount)
+	if firstType == "INT_CONST" || firstType == "STRING_CONST" || firstType == "KEYWORD" {
+		// Nothing else needs to be done
 
+	} else if firstType == "IDENTIFIER" { // varName | varName '[' expression ']' | subroutineCall
+
+		if X.tokenizer.Token == "[" { // varName '[' expression ']'
+			helpWrite(X.file, X.tokenizer.FormatTokenString(), X.err, X.tabAmount) // write the '['
+			X.tokenizer.Advance()
+			X.CompileExpression()
+			helpWrite(X.file, X.tokenizer.FormatTokenString(), X.err, X.tabAmount) // write the ']'
+			X.tokenizer.Advance()
+
+		} else if X.tokenizer.Token == "(" || X.tokenizer.Token == "." { // subroutineCall
+			X.CompileSubroutineCall()
+
+		} else { // varName
+			// Nothing else needs to be done, as the varName has already been written
+		}
+
+	} else if firstType == "SYMBOL" { // '(' expression ')' | unaryOp term
+		if firstToken == "(" { // '(' expression ')'
+			X.CompileExpression()
+			helpWrite(X.file, X.tokenizer.FormatTokenString(), X.err, X.tabAmount) // write the ')'
+			X.tokenizer.Advance()
+
+		} else { // unaryOp term
+			X.CompileTerm()
+		}
 	}
-	// // varName //TODO: FIX
-	// if X.tokenizer.TokenType() == "identifier" {
-	// 	helpWrite(X.file, "<term>\n", X.err, X.tabAmount)
-	// 	X.tabAmount += 1
-	// 	helpWrite(X.file, X.tokenizer.Token, X.err, X.tabAmount)
-	// 	X.tabAmount -= 1
-	// 	helpWrite(X.file, "</term>\n", X.err, X.tabAmount)
-	// 	return
-	// }
-	// // varName '[' expression ']'
-	// if X.tokenizer.TokenType() == "identifier" {
-	// 	helpWrite(X.file, "<term>\n", X.err, X.tabAmount)
-	// 	X.tabAmount += 1
-	// 	helpWrite(X.file, X.tokenizer.Token, X.err, X.tabAmount)
-	// 	X.tokenizer.Advance()
-	// 	if X.tokenizer.Symbol() != "[" {
-	// 		//throw an error
-	// 		return
-	// 	}
-	// 	helpWrite(X.file, X.tokenizer.Token, X.err, X.tabAmount)
-	// 	X.CompileExpression()
-	// 	X.tokenizer.Advance()
-	// 	if X.tokenizer.Symbol() != "]" {
-	// 		//throw an error
-	// 		return
-	// 	}
+
 	X.tabAmount -= 1
 	helpWrite(X.file, "</term>\n", X.err, X.tabAmount)
 }
@@ -254,6 +258,7 @@ func (X *comp) CompileExpressionList() {
 	// As expressionLists always have a ')' after, check if it does, if so the expression list is empty
 	if X.tokenizer.Symbol() == ")" {
 		helpWrite(X.file, "<expressionList> </expressionList>\n", X.err, X.tabAmount)
+		X.tokenizer.Advance()
 		return
 	}
 	helpWrite(X.file, "<expressionList>\n", X.err, X.tabAmount)
@@ -267,7 +272,6 @@ func (X *comp) CompileExpressionList() {
 		helpWrite(X.file, X.tokenizer.Token, X.err, X.tabAmount) // write the comma
 		X.tokenizer.Advance()
 		X.CompileExpression()
-		X.tokenizer.Advance()
 	}
 	X.tabAmount -= 1
 	helpWrite(X.file, "</expressionList>\n", X.err, X.tabAmount)
