@@ -233,9 +233,8 @@ func (X *comp) CompileTerm() {
 		} else if X.tokenizer.Token == "(" || X.tokenizer.Token == "." { // subroutineCall
 			X.CompileSubroutineCall()
 
-		} else { // varName
-			// Nothing else needs to be done, as the varName has already been written
-		}
+		} // else { // just varName
+		// Nothing else needs to be done, as the varName has already been written
 
 	} else if firstType == "SYMBOL" { // '(' expression ')' | unaryOp term
 		if firstToken == "(" { // '(' expression ')'
