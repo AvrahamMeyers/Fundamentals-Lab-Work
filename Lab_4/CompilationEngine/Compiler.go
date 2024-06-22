@@ -32,7 +32,7 @@ type comp struct {
 	tabAmount int
 }
 
-func (X *comp) Constructor(fileName string, err error) {
+func (X *comp) Constructor(fileName string, folderpath string, err error) {
 	file, err := os.OpenFile(fileName+".xml", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
 		return
@@ -40,7 +40,7 @@ func (X *comp) Constructor(fileName string, err error) {
 	defer file.Close()
 	X.file = file
 	X.err = err
-	X.tokenizer.Constructor(fileName)
+	X.tokenizer.Constructor(fileName, folderpath)
 	//A jack program will always begin with the word class
 	X.CompileClass()
 	X.tabAmount = 0
