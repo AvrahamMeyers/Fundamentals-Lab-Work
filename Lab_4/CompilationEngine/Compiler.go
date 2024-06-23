@@ -1,4 +1,4 @@
-package compilationengine
+package CompilationEngine
 
 import (
 	"fmt"
@@ -25,15 +25,15 @@ func helpWrite(file *os.File, text string, err error, tab int) {
 // Tokenizer object holds the current token
 // file is the file that the xml will be written to
 // tabAmount is the indentation level of the current line
-type comp struct {
+type CompilationEngine struct {
 	tokenizer Tokenizer.Tokenizer
 	file      *os.File
 	err       error
 	tabAmount int
 }
 
-func (X *comp) Constructor(fileName string, folderpath string, err error) {
-	file, err := os.OpenFile(fileName+".xml", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+func (X *CompilationEngine) Constructor(fileName string, folderpath string) {
+	file, err := os.OpenFile(fileName+"New"+".xml", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
 		return
 	}
@@ -47,7 +47,7 @@ func (X *comp) Constructor(fileName string, folderpath string, err error) {
 }
 
 // Compiles a complete class.
-func (X *comp) CompileClass() {
+func (X *CompilationEngine) CompileClass() {
 	// class: 'class'className'{'classVarDec*subroutineDec*'}'
 	if X.tokenizer.TokenType() == "class" {
 		helpWrite(X.file, "<class>\n", X.err, X.tabAmount)
@@ -95,7 +95,7 @@ func (X *comp) CompileClass() {
 Compiles a static declaration or
 a field declaration.
 */
-func (X *comp) CompileClassVarDec() {
+func (X *CompilationEngine) CompileClassVarDec() {
 	helpWrite(X.file, "<classVarDec>\n", X.err, X.tabAmount)
 	X.tabAmount += 1
 	//it was already determined that the current token is static or field
@@ -136,7 +136,7 @@ func (X *comp) CompileClassVarDec() {
 
 // Compiles a complete method,
 // function, or constructor.
-func (X *comp) CompileSubroutine() {
+func (X *CompilationEngine) CompileSubroutine() {
 	helpWrite(X.file, "<subroutineDec>\n", X.err, X.tabAmount)
 	X.tabAmount += 1
 
@@ -180,7 +180,7 @@ func (X *comp) CompileSubroutine() {
 }
 
 // Compiles a (possibly empty) parameter list, not including the enclosing ‘‘()’’.
-func (X *comp) CompileParameterList() {
+func (X *CompilationEngine) CompileParameterList() {
 	//not adding tabamount in this function as a test to see if we actually need tab amount
 	//start param list
 	helpWrite(X.file, "<parameterList>\n", X.err, X.tabAmount)
@@ -205,7 +205,7 @@ func (X *comp) CompileParameterList() {
 }
 
 // Compiles a var declaration.
-func (X *comp) CompileVarDec() {
+func (X *CompilationEngine) CompileVarDec() {
 	for X.tokenizer.KeyWord() == "var" {
 		helpWrite(X.file, "<varDec\n>", X.err, X.tabAmount)
 		//var
@@ -234,7 +234,7 @@ func (X *comp) CompileVarDec() {
 }
 
 // Compiles a sequence of statements, not including the enclosing ‘‘{}’’.
-func (X *comp) CompileStatements() {
+func (X *CompilationEngine) CompileStatements() {
 	helpWrite(X.file, "<statements>\n", X.err, X.tabAmount)
 	for X.tokenizer.KeyWord() == "let" ||
 		X.tokenizer.KeyWord() == "if" ||
@@ -260,7 +260,7 @@ func (X *comp) CompileStatements() {
 }
 
 // Compiles a do statement.
-func (X *comp) CompileDo() {
+func (X *CompilationEngine) CompileDo() {
 	helpWrite(X.file, "<doStatement>\n", X.err, X.tabAmount)
 	//do
 	helpWrite(X.file, X.tokenizer.Token, X.err, X.tabAmount)
@@ -273,7 +273,7 @@ func (X *comp) CompileDo() {
 }
 
 // Compiles a let statement.
-func (X *comp) CompileLet() {
+func (X *CompilationEngine) CompileLet() {
 	helpWrite(X.file, "<letStatement>\n", X.err, X.tabAmount)
 	//let
 	helpWrite(X.file, X.tokenizer.Token, X.err, X.tabAmount)
@@ -305,7 +305,7 @@ func (X *comp) CompileLet() {
 }
 
 // Compiles a while statement.
-func (X *comp) CompileWhile() {
+func (X *CompilationEngine) CompileWhile() {
 	helpWrite(X.file, "<whileStatement>\n", X.err, X.tabAmount)
 	//while
 	helpWrite(X.file, X.tokenizer.Token, X.err, X.tabAmount)
@@ -329,7 +329,7 @@ func (X *comp) CompileWhile() {
 }
 
 // Compiles a return statement.
-func (X *comp) CompileReturn() {
+func (X *CompilationEngine) CompileReturn() {
 	helpWrite(X.file, "<returnStatement>\n", X.err, X.tabAmount)
 	//return
 	helpWrite(X.file, X.tokenizer.Token, X.err, X.tabAmount)
@@ -347,7 +347,7 @@ func (X *comp) CompileReturn() {
 // Compiles an if statement, possibly with a trailing else clause.
 // Grammar: ifStatement: 'if' '(' expression ')' '{' statements '}'
 // ('else' '{' statements '}')?
-func (X *comp) CompileIf() {
+func (X *CompilationEngine) CompileIf() {
 	helpWrite(X.file, "<ifStatement>\n", X.err, X.tabAmount)
 	//if
 	helpWrite(X.file, X.tokenizer.FormatTokenString(), X.err, X.tabAmount)
@@ -383,7 +383,7 @@ func (X *comp) CompileIf() {
 
 // Compiles an expression
 // Grammar: expression: term (op term)*
-func (X *comp) CompileExpression() {
+func (X *CompilationEngine) CompileExpression() {
 	helpWrite(X.file, "<expression>\n", X.err, X.tabAmount)
 	X.tabAmount += 1
 	X.CompileTerm()
@@ -402,7 +402,7 @@ func (X *comp) CompileExpression() {
 // Compiles a subroutine call, not a seperate function, doesn't have its own tags
 // Grammar: subroutineCall: subroutineName '(' expressionList ')' | (className |
 // varName) '.' subroutineName '(' expressionList ')'
-func (X *comp) CompileSubroutineCall() {
+func (X *CompilationEngine) CompileSubroutineCall() {
 	helpWrite(X.file, X.tokenizer.FormatTokenString(), X.err, X.tabAmount) // write: subroutineName or className or varName
 	X.tokenizer.Advance()
 	if X.tokenizer.Token == "(" {
@@ -432,7 +432,7 @@ func (X *comp) CompileSubroutineCall() {
 // should not be advanced over. Follows grammar:
 // integerConstant | stringConstant | keywordConstant | varName | varName '[' expression ']'
 // | subroutineCall | '(' expression ')' | unaryOp term
-func (X *comp) CompileTerm() {
+func (X *CompilationEngine) CompileTerm() {
 	helpWrite(X.file, "<term>\n", X.err, X.tabAmount)
 	X.tabAmount += 1
 
@@ -478,7 +478,7 @@ func (X *comp) CompileTerm() {
 
 // Compiles a (possibly empty) comma-separated list of expressions.
 // Follows grammar: (expression (',' expression)* )?
-func (X *comp) CompileExpressionList() {
+func (X *CompilationEngine) CompileExpressionList() {
 	// As expressionLists always have a ')' after, check if it does, if so the expression list is empty
 	if X.tokenizer.Symbol() == ")" {
 		helpWrite(X.file, "<expressionList> </expressionList>\n", X.err, X.tabAmount)
