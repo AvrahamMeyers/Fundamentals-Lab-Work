@@ -34,13 +34,6 @@ func (X *Tokenizer) HasMoreTokens() bool {
 	return X.FilePos < len(X.Filetext)
 }
 
-// skipWhitespace skips whitespace characters in the input
-func (t *Tokenizer) skipWhitespace() {
-	for t.FilePos < len(t.Filetext) && unicode.IsSpace(rune(t.Filetext[t.FilePos])) {
-		t.FilePos++
-	}
-}
-
 // Gets the next token from the input
 // and makes it the current token. This
 // method should only be called if
@@ -206,6 +199,13 @@ func (X *Tokenizer) TokenizeFile() string {
 	final_str += "</tokens>"
 
 	return final_str
+}
+
+// skipWhitespace skips whitespace characters in the input
+func (t *Tokenizer) skipWhitespace() {
+	for t.FilePos < len(t.Filetext) && unicode.IsSpace(rune(t.Filetext[t.FilePos])) {
+		t.FilePos++
+	}
 }
 
 func removeComments(text string) string {
