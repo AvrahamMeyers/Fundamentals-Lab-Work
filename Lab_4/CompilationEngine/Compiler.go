@@ -140,7 +140,40 @@ func (X *comp) CompileSubroutine() {
 	helpWrite(X.file, "<subroutineDec>\n", X.err, X.tabAmount)
 	X.tabAmount += 1
 
-	// TODO: implement rest of function
+	// TODO: implement rest of function  ('constructor'|'function'|'method') ('void'|type)subroutineName'('parameterList')' subroutineBody
+	helpWrite(X.file, X.tokenizer.Token, X.err, X.tabAmount)
+	X.tokenizer.Advance()
+	//assumes next token is correct keyword void or type <keyword>
+	helpWrite(X.file, X.tokenizer.Token, X.err, X.tabAmount)
+	X.tokenizer.Advance()
+	//assumes next token is correct subroutine name <identifier>
+	helpWrite(X.file, X.tokenizer.Token, X.err, X.tabAmount)
+	X.tokenizer.Advance()
+	//assumes next toekn is correct <symbol>'('
+	helpWrite(X.file, X.tokenizer.Token, X.err, X.tabAmount)
+	X.tokenizer.Advance()
+	//call parameter list
+	X.CompileParameterList()
+	//assumes next token is correct <symbol ')'
+	helpWrite(X.file, X.tokenizer.Token, X.err, X.tabAmount)
+	X.tokenizer.Advance()
+	//subroutine body
+	helpWrite(X.file, "<subroutineBody>\n", X.err, X.tabAmount)
+	X.tabAmount += 1
+	//assumes next token is correct <symbol> '{'
+	helpWrite(X.file, X.tokenizer.Token, X.err, X.tabAmount)
+	X.tokenizer.Advance()
+	//var declerations
+	X.CompileVarDec()
+	//statements
+	X.CompileStatements()
+
+	//assumes next token is correct <symbol> '}'
+	helpWrite(X.file, X.tokenizer.Token, X.err, X.tabAmount)
+	X.tokenizer.Advance()
+	//end subroutine body </subroutineBody>
+	X.tabAmount -= 1
+	helpWrite(X.file, "</subroutineBody>", X.err, X.tabAmount)
 
 	X.tabAmount -= 1
 	helpWrite(X.file, "</subroutineDec>\n", X.err, X.tabAmount)
