@@ -350,8 +350,21 @@ func (X *comp) CompileIf() {
 }
 
 // Compiles an expression
+// Grammar: expression: term (op term)*
 func (X *comp) CompileExpression() {
-
+	helpWrite(X.file, "<expression>\n", X.err, X.tabAmount)
+	X.tabAmount += 1
+	X.CompileTerm()
+	if X.tokenizer.TokenType() == "SYMBOL" {
+		var token string = X.tokenizer.Symbol()
+		for token == "+" || token == "-" || token == "*" || token == "/" || token == "&" || token == "|" || token == "<" || token == ">" || token == "=" {
+			helpWrite(X.file, X.tokenizer.Token, X.err, X.tabAmount) // write: op
+			X.tokenizer.Advance()
+			X.CompileTerm()
+		}
+	}
+	X.tabAmount -= 1
+	helpWrite(X.file, "</expression>\n", X.err, X.tabAmount)
 }
 
 // Compiles a subroutine call, not a seperate function, doesn't have its own tags
@@ -385,9 +398,8 @@ func (X *comp) CompileSubroutineCall() {
 // of ‘‘[’’, ‘‘(’’, or ‘‘.’’ suffices to distinguish between the three
 // possibilities. Any other token is not part of this term and
 // should not be advanced over. Follows grammar:
-// integerConstant | stringConstant | keywordConstant | varName | varName '[' expression ']' |
-//
-//	subroutineCall | '(' expression ')' | unaryOp term
+// integerConstant | stringConstant | keywordConstant | varName | varName '[' expression ']'
+// | subroutineCall | '(' expression ')' | unaryOp term
 func (X *comp) CompileTerm() {
 	helpWrite(X.file, "<term>\n", X.err, X.tabAmount)
 	X.tabAmount += 1
