@@ -49,7 +49,7 @@ func (X *CompilationEngine) Constructor(fileName string, folderpath string) {
 // Compiles a complete class.
 func (X *CompilationEngine) CompileClass() {
 	// class: 'class'className'{'classVarDec*subroutineDec*'}'
-	if X.tokenizer.TokenType() == "class" {
+	if X.tokenizer.KeyWord() == "class" {
 		helpWrite(X.file, "<class>\n", X.err, X.tabAmount)
 		X.tabAmount += 1
 		//'class'
