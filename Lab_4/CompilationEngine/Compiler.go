@@ -345,8 +345,40 @@ func (X *comp) CompileReturn() {
 }
 
 // Compiles an if statement, possibly with a trailing else clause.
+// Grammar: ifStatement: 'if' '(' expression ')' '{' statements '}'
+// ('else' '{' statements '}')?
 func (X *comp) CompileIf() {
-
+	helpWrite(X.file, "<ifStatement>\n", X.err, X.tabAmount)
+	//if
+	helpWrite(X.file, X.tokenizer.FormatTokenString(), X.err, X.tabAmount)
+	X.tokenizer.Advance()
+	//symbol '('
+	helpWrite(X.file, X.tokenizer.FormatTokenString(), X.err, X.tabAmount)
+	X.tokenizer.Advance()
+	X.CompileExpression()
+	//symbol ')'
+	helpWrite(X.file, X.tokenizer.FormatTokenString(), X.err, X.tabAmount)
+	X.tokenizer.Advance()
+	//symbol '{'
+	helpWrite(X.file, X.tokenizer.FormatTokenString(), X.err, X.tabAmount)
+	X.tokenizer.Advance()
+	X.CompileStatements()
+	//symbol '}'
+	helpWrite(X.file, X.tokenizer.FormatTokenString(), X.err, X.tabAmount)
+	X.tokenizer.Advance()
+	if X.tokenizer.KeyWord() == "else" {
+		//else
+		helpWrite(X.file, X.tokenizer.FormatTokenString(), X.err, X.tabAmount)
+		X.tokenizer.Advance()
+		//symbol '{'
+		helpWrite(X.file, X.tokenizer.FormatTokenString(), X.err, X.tabAmount)
+		X.tokenizer.Advance()
+		X.CompileStatements()
+		//symbol '}'
+		helpWrite(X.file, X.tokenizer.FormatTokenString(), X.err, X.tabAmount)
+		X.tokenizer.Advance()
+	}
+	helpWrite(X.file, "</ifStatement>\n", X.err, X.tabAmount)
 }
 
 // Compiles an expression
@@ -358,7 +390,7 @@ func (X *comp) CompileExpression() {
 	if X.tokenizer.TokenType() == "SYMBOL" {
 		var token string = X.tokenizer.Symbol()
 		for token == "+" || token == "-" || token == "*" || token == "/" || token == "&" || token == "|" || token == "<" || token == ">" || token == "=" {
-			helpWrite(X.file, X.tokenizer.Token, X.err, X.tabAmount) // write: op
+			helpWrite(X.file, X.tokenizer.FormatTokenString(), X.err, X.tabAmount) // write: op
 			X.tokenizer.Advance()
 			X.CompileTerm()
 		}
