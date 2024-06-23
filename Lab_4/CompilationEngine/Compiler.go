@@ -330,7 +330,18 @@ func (X *comp) CompileWhile() {
 
 // Compiles a return statement.
 func (X *comp) CompileReturn() {
+	helpWrite(X.file, "<returnStatement>\n", X.err, X.tabAmount)
+	//return
+	helpWrite(X.file, X.tokenizer.Token, X.err, X.tabAmount)
+	X.tokenizer.Advance()
+	if X.tokenizer.Symbol() != ";" {
+		X.CompileExpression()
+	}
+	//symbol ;
+	helpWrite(X.file, X.tokenizer.Token, X.err, X.tabAmount)
+	X.tokenizer.Advance()
 
+	helpWrite(X.file, "</returnStatement>\n", X.err, X.tabAmount)
 }
 
 // Compiles an if statement, possibly with a trailing else clause.
