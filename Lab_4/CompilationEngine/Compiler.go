@@ -354,9 +354,27 @@ func (X *comp) CompileExpression() {
 
 }
 
-// Compiles a subroutine call
+// Compiles a subroutine call, not a seperate function, doesn't have its own tags
+// Grammar: subroutineCall: subroutineName '(' expressionList ')' | (className |
+// varName) '.' subroutineName '(' expressionList ')'
 func (X *comp) CompileSubroutineCall() {
-
+	helpWrite(X.file, X.tokenizer.FormatTokenString(), X.err, X.tabAmount) // write: subroutineName or className or varName
+	X.tokenizer.Advance()
+	if X.tokenizer.Token == "(" {
+		helpWrite(X.file, X.tokenizer.FormatTokenString(), X.err, X.tabAmount) // write: '('
+		X.tokenizer.Advance()
+		X.CompileExpressionList()
+	} else {
+		helpWrite(X.file, X.tokenizer.FormatTokenString(), X.err, X.tabAmount) // write: '.'
+		X.tokenizer.Advance()
+		helpWrite(X.file, X.tokenizer.FormatTokenString(), X.err, X.tabAmount) // write: subroutineName
+		X.tokenizer.Advance()
+		helpWrite(X.file, X.tokenizer.FormatTokenString(), X.err, X.tabAmount) // write: '('
+		X.tokenizer.Advance()
+		X.CompileExpressionList() // write: expressionList
+	}
+	helpWrite(X.file, X.tokenizer.FormatTokenString(), X.err, X.tabAmount) // write: ')'
+	X.tokenizer.Advance()
 }
 
 // Compiles a term. This routine is faced with a slight difficulty
