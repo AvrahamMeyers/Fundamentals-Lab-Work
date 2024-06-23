@@ -261,12 +261,47 @@ func (X *comp) CompileStatements() {
 
 // Compiles a do statement.
 func (X *comp) CompileDo() {
-
+	helpWrite(X.file, "<doStatement>\n", X.err, X.tabAmount)
+	//do
+	helpWrite(X.file, X.tokenizer.Token, X.err, X.tabAmount)
+	X.tokenizer.Advance()
+	X.CompileSubroutineCall()
+	//symbol ;
+	helpWrite(X.file, X.tokenizer.Token, X.err, X.tabAmount)
+	X.tokenizer.Advance()
+	helpWrite(X.file, "</doStatement>\n", X.err, X.tabAmount)
 }
 
 // Compiles a let statement.
 func (X *comp) CompileLet() {
-
+	helpWrite(X.file, "<letStatement>\n", X.err, X.tabAmount)
+	//let
+	helpWrite(X.file, X.tokenizer.Token, X.err, X.tabAmount)
+	X.tokenizer.Advance()
+	//varName
+	helpWrite(X.file, X.tokenizer.Token, X.err, X.tabAmount)
+	X.tokenizer.Advance()
+	// [expression]?
+	if X.tokenizer.Symbol() == "[" {
+		//[
+		helpWrite(X.file, X.tokenizer.Token, X.err, X.tabAmount)
+		X.tokenizer.Advance()
+		X.CompileExpression()
+		//]
+		helpWrite(X.file, X.tokenizer.Token, X.err, X.tabAmount)
+		X.tokenizer.Advance()
+		//=
+		helpWrite(X.file, X.tokenizer.Token, X.err, X.tabAmount)
+		X.tokenizer.Advance()
+		X.CompileExpression()
+		//;
+		helpWrite(X.file, X.tokenizer.Token, X.err, X.tabAmount)
+		X.tokenizer.Advance()
+	}
+	//symbol ;
+	helpWrite(X.file, X.tokenizer.Token, X.err, X.tabAmount)
+	X.tokenizer.Advance()
+	helpWrite(X.file, "</letStatement>\n", X.err, X.tabAmount)
 }
 
 // Compiles a while statement.
