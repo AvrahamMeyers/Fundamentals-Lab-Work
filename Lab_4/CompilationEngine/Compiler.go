@@ -140,7 +140,7 @@ func (X *comp) CompileSubroutine() {
 	helpWrite(X.file, "<subroutineDec>\n", X.err, X.tabAmount)
 	X.tabAmount += 1
 
-	// TODO: implement rest of function  ('constructor'|'function'|'method') ('void'|type)subroutineName'('parameterList')' subroutineBody
+	// ('constructor'|'function'|'method') ('void'|type)subroutineName'('parameterList')' subroutineBody
 	helpWrite(X.file, X.tokenizer.Token, X.err, X.tabAmount)
 	X.tokenizer.Advance()
 	//assumes next token is correct keyword void or type <keyword>
@@ -173,7 +173,7 @@ func (X *comp) CompileSubroutine() {
 	X.tokenizer.Advance()
 	//end subroutine body </subroutineBody>
 	X.tabAmount -= 1
-	helpWrite(X.file, "</subroutineBody>", X.err, X.tabAmount)
+	helpWrite(X.file, "</subroutineBody>\n", X.err, X.tabAmount)
 
 	X.tabAmount -= 1
 	helpWrite(X.file, "</subroutineDec>\n", X.err, X.tabAmount)
@@ -181,12 +181,56 @@ func (X *comp) CompileSubroutine() {
 
 // Compiles a (possibly empty) parameter list, not including the enclosing ‘‘()’’.
 func (X *comp) CompileParameterList() {
+	//not adding tabamount in this function as a test to see if we actually need tab amount
+	//start param list
+	helpWrite(X.file, "<parameterList>\n", X.err, X.tabAmount)
 
+	//assumes the token expected is ) unless its a parameter
+	for X.tokenizer.TokenType() == "symbol" && X.tokenizer.Symbol() == ")" {
+		//type
+		helpWrite(X.file, X.tokenizer.Token, X.err, X.tabAmount)
+		X.tokenizer.Advance()
+		//varname
+		helpWrite(X.file, X.tokenizer.Token, X.err, X.tabAmount)
+		X.tokenizer.Advance()
+
+		//if there are more parameters if there aren't the for loop will be checked again and will break
+		if X.tokenizer.Symbol() == "," {
+			helpWrite(X.file, X.tokenizer.Token, X.err, X.tabAmount)
+			X.tokenizer.Advance()
+		}
+	}
+
+	helpWrite(X.file, "</parameterList>\n", X.err, X.tabAmount)
 }
 
 // Compiles a var declaration.
 func (X *comp) CompileVarDec() {
+	for X.tokenizer.KeyWord() == "var" {
+		helpWrite(X.file, "<varDec>", X.err, X.tabAmount)
+		//var
+		helpWrite(X.file, X.tokenizer.Token, X.err, X.tabAmount)
+		X.tokenizer.Advance()
+		//type
+		helpWrite(X.file, X.tokenizer.Token, X.err, X.tabAmount)
+		X.tokenizer.Advance()
+		//varName
+		helpWrite(X.file, X.tokenizer.Token, X.err, X.tabAmount)
+		X.tokenizer.Advance()
+		for X.tokenizer.Symbol() == "," {
+			//,
+			helpWrite(X.file, X.tokenizer.Token, X.err, X.tabAmount)
+			X.tokenizer.Advance()
+			//varName
+			helpWrite(X.file, X.tokenizer.Token, X.err, X.tabAmount)
+			X.tokenizer.Advance()
+		}
+		//;
+		helpWrite(X.file, X.tokenizer.Token, X.err, X.tabAmount)
+		X.tokenizer.Advance()
+		helpWrite(X.file, "</varDec>", X.err, X.tabAmount)
 
+	}
 }
 
 // Compiles a sequence of statements, not including the enclosing ‘‘{}’’.
