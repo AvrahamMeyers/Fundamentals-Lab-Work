@@ -306,7 +306,26 @@ func (X *comp) CompileLet() {
 
 // Compiles a while statement.
 func (X *comp) CompileWhile() {
+	helpWrite(X.file, "<whileStatement>\n", X.err, X.tabAmount)
+	//while
+	helpWrite(X.file, X.tokenizer.Token, X.err, X.tabAmount)
+	X.tokenizer.Advance()
+	//symbol (
+	helpWrite(X.file, X.tokenizer.Token, X.err, X.tabAmount)
+	X.tokenizer.Advance()
+	X.CompileExpression()
+	//symbol )
+	helpWrite(X.file, X.tokenizer.Token, X.err, X.tabAmount)
+	X.tokenizer.Advance()
+	//symbol {
+	helpWrite(X.file, X.tokenizer.Token, X.err, X.tabAmount)
+	X.tokenizer.Advance()
+	X.CompileStatements()
+	// }
+	helpWrite(X.file, X.tokenizer.Token, X.err, X.tabAmount)
+	X.tokenizer.Advance()
 
+	helpWrite(X.file, "</whileStatement>\n", X.err, X.tabAmount)
 }
 
 // Compiles a return statement.
