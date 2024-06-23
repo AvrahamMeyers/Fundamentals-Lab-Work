@@ -33,7 +33,7 @@ func print_tokenizer_token_info(tokenizer Tokenizer.Tokenizer) {
 func test_tokenizer() {
 	filepath := "test.jack"
 
-	folderpath := "C:\\Users\\a3210\\Machon Lev\\Year 4\\Semester B\\Fundamentals\\Project\\Fundamentals-Lab-Work\\Lab_4\\Tokenizer"
+	folderpath := "C:\\Users\\csfwn\\school\\Fundamentals\\Fundamentals-Lab-Work\\Fundamentals-Lab-Work\\Lab_4\\Tokenizer"
 
 	var tokenizer Tokenizer.Tokenizer
 	tokenizer.Constructor(filepath, folderpath)
