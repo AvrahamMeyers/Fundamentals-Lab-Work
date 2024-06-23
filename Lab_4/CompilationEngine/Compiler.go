@@ -66,13 +66,14 @@ func (X *CompilationEngine) CompileClass() {
 		X.tokenizer.Advance()
 
 		//className (identifier)
-		// if X.tokenizer.TokenType() != "identifier" {
-		// 	//throw an error
-		// 	return
-		// }
-
-		X.CompileTerm()
+		if X.tokenizer.TokenType() != "IDENTIFIER" {
+			//throw an error
+			return
+		}
+		helpWrite(X.file, X.tokenizer.FormatTokenString())
 		X.tokenizer.Advance()
+		//X.CompileTerm()
+		//X.tokenizer.Advance()
 		//symbol {
 		if X.tokenizer.Symbol() != "{" {
 			//throw an error
@@ -88,10 +89,10 @@ func (X *CompilationEngine) CompileClass() {
 		}
 
 		//at this point we have reached the end of the class and should only have '}' left
-		if X.tokenizer.Symbol() != "}" {
-			//throw an error
-			return
-		}
+		// if X.tokenizer.Symbol() != "}" {
+		// 	//throw an error
+		// 	return
+		// }
 		helpWrite(X.file, X.tokenizer.FormatTokenString())
 
 		helpWrite(X.file, "</class>\n")
@@ -215,7 +216,7 @@ func (X *CompilationEngine) CompileParameterList() {
 // Compiles a var declaration.
 func (X *CompilationEngine) CompileVarDec() {
 	for X.tokenizer.KeyWord() == "var" {
-		helpWrite(X.file, "<varDec\n>")
+		helpWrite(X.file, "<varDec>\n")
 		//var
 		helpWrite(X.file, X.tokenizer.FormatTokenString())
 		X.tokenizer.Advance()
@@ -298,14 +299,13 @@ func (X *CompilationEngine) CompileLet() {
 		//]
 		helpWrite(X.file, X.tokenizer.FormatTokenString())
 		X.tokenizer.Advance()
-		//=
-		helpWrite(X.file, X.tokenizer.FormatTokenString())
-		X.tokenizer.Advance()
-		X.CompileExpression()
-		//;
-		helpWrite(X.file, X.tokenizer.FormatTokenString())
-		X.tokenizer.Advance()
+
 	}
+	//=
+	helpWrite(X.file, X.tokenizer.FormatTokenString())
+	X.tokenizer.Advance()
+	X.CompileExpression()
+
 	//symbol ;
 	helpWrite(X.file, X.tokenizer.FormatTokenString())
 	X.tokenizer.Advance()
@@ -397,10 +397,11 @@ func (X *CompilationEngine) CompileExpression() {
 	X.CompileTerm()
 	if X.tokenizer.TokenType() == "SYMBOL" {
 		var token string = X.tokenizer.Symbol()
-		for token == "+" || token == "-" || token == "*" || token == "/" || token == "&" || token == "|" || token == "<" || token == ">" || token == "=" {
+		for token == "+" || token == "-" || token == "*" || token == "/" || token == "&amp;" || token == "|" || token == "&lt;" || token == "&gt;" || token == "=" {
 			helpWrite(X.file, X.tokenizer.FormatTokenString()) // write: op
 			X.tokenizer.Advance()
 			X.CompileTerm()
+			token = X.tokenizer.Symbol()
 		}
 	}
 
@@ -495,7 +496,7 @@ func (X *CompilationEngine) CompileExpressionList() {
 
 	// expression
 	X.CompileExpression()
-	X.tokenizer.Advance()
+	//X.tokenizer.Advance()
 
 	//(',' expression)*
 	for X.tokenizer.Symbol() == "," {
