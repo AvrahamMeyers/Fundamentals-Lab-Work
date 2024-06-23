@@ -207,7 +207,7 @@ func (X *comp) CompileParameterList() {
 // Compiles a var declaration.
 func (X *comp) CompileVarDec() {
 	for X.tokenizer.KeyWord() == "var" {
-		helpWrite(X.file, "<varDec>", X.err, X.tabAmount)
+		helpWrite(X.file, "<varDec\n>", X.err, X.tabAmount)
 		//var
 		helpWrite(X.file, X.tokenizer.Token, X.err, X.tabAmount)
 		X.tokenizer.Advance()
@@ -228,14 +228,35 @@ func (X *comp) CompileVarDec() {
 		//;
 		helpWrite(X.file, X.tokenizer.Token, X.err, X.tabAmount)
 		X.tokenizer.Advance()
-		helpWrite(X.file, "</varDec>", X.err, X.tabAmount)
+		helpWrite(X.file, "</varDec>\n", X.err, X.tabAmount)
 
 	}
 }
 
 // Compiles a sequence of statements, not including the enclosing ‘‘{}’’.
 func (X *comp) CompileStatements() {
-
+	helpWrite(X.file, "<statements>\n", X.err, X.tabAmount)
+	for X.tokenizer.KeyWord() == "let" ||
+		X.tokenizer.KeyWord() == "if" ||
+		X.tokenizer.KeyWord() == "while" ||
+		X.tokenizer.KeyWord() == "do" ||
+		X.tokenizer.KeyWord() == "return" {
+		switch X.tokenizer.KeyWord() {
+		case "let":
+			X.CompileLet()
+		case "if":
+			X.CompileIf()
+		case "while":
+			X.CompileWhile()
+		case "do":
+			X.CompileDo()
+		case "return":
+			X.CompileReturn()
+		default:
+			fmt.Println("something unexpected happened in the Compile statements function")
+		}
+	}
+	helpWrite(X.file, "</statements>\n", X.err, X.tabAmount)
 }
 
 // Compiles a do statement.
