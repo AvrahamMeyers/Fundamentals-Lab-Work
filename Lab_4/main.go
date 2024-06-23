@@ -102,7 +102,7 @@ func compilation_main() {
 		file_title := strings.Split(file_name, ".")[0]
 
 		var compiler CompilationEngine.CompilationEngine
-		compiler.Constructor(file_name, folder_path)
+		compiler.Constructor(file_title, folder_path)
 
 		fmt.Println("End of input file: ", file_title)
 	}
