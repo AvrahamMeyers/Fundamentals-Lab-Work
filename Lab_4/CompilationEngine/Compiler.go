@@ -105,41 +105,30 @@ func (X *CompilationEngine) CompileClass() {
 /*
 Compiles a static declaration or
 a field declaration.
+Grammar:  ('static'|'field') type varName (',' varName)* ';'
 */
 func (X *CompilationEngine) CompileClassVarDec() {
 	helpWrite(X.file, "<classVarDec>\n")
 
 	//it was already determined that the current token is static or field
-	helpWrite(X.file, X.tokenizer.FormatTokenString())
+	helpWrite(X.file, X.tokenizer.FormatTokenString()) // write static or field
 	X.tokenizer.Advance()
 
-	//type
-	if X.tokenizer.KeyWord() != "int" || X.tokenizer.KeyWord() != "char" || X.tokenizer.KeyWord() != "boolean" || X.tokenizer.TokenType() != "identifier" {
-		//throw an error
-		return
-	}
-	helpWrite(X.file, X.tokenizer.FormatTokenString())
-	if X.tokenizer.TokenType() != "identifier" {
-		//throw an error
-		return
-	}
-	X.CompileTerm()
+	helpWrite(X.file, X.tokenizer.FormatTokenString()) // write the type
 	X.tokenizer.Advance()
-	for X.tokenizer.Symbol() == "," {
-		helpWrite(X.file, X.tokenizer.FormatTokenString())
+
+	helpWrite(X.file, X.tokenizer.FormatTokenString()) // write varname
+	X.tokenizer.Advance()
+
+	for X.tokenizer.Token == "," {
+		helpWrite(X.file, X.tokenizer.FormatTokenString()) // write the ","
 		X.tokenizer.Advance()
-		if X.tokenizer.TokenType() != "identifier" {
-			//throw an error
-			return
-		}
-		X.CompileTerm()
+
+		helpWrite(X.file, X.tokenizer.FormatTokenString()) // write varname
 		X.tokenizer.Advance()
 	}
-	if X.tokenizer.Symbol() != "," {
-		//throw an error
-		return
-	}
-	helpWrite(X.file, X.tokenizer.FormatTokenString())
+
+	helpWrite(X.file, X.tokenizer.FormatTokenString()) // write the ";"
 	X.tokenizer.Advance()
 
 	helpWrite(X.file, "</classVarDec>\n")
