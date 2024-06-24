@@ -178,25 +178,30 @@ func (X *CompilationEngine) CompileSubroutine() {
 }
 
 // Compiles a (possibly empty) parameter list, not including the enclosing ‘‘()’’.
+// Grammar: parameterList: ((type varName) (',' type varName)*)?
 func (X *CompilationEngine) CompileParameterList() {
-	//not adding tabamount in this function as a test to see if we actually need tab amount
-	//start param list
-	helpWrite(X.file, "<parameterList>\n")
 
-	//assumes the token expected is ) unless its a parameter
-	for X.tokenizer.TokenType() == "symbol" && X.tokenizer.Symbol() == ")" {
-		//type
-		helpWrite(X.file, X.tokenizer.FormatTokenString())
-		X.tokenizer.Advance()
-		//varname
-		helpWrite(X.file, X.tokenizer.FormatTokenString())
-		X.tokenizer.Advance()
+	// As expressionLists always have a ')' after, check if it does, if so the expression list is empty
+	if X.tokenizer.Symbol() == ")" {
+		helpWrite(X.file, "<parameterList> </parameterList>\n")
+		// no need to advacnce, the ') is part of the caller of parameterList
+		return
+	}
 
-		//if there are more parameters if there aren't the for loop will be checked again and will break
-		if X.tokenizer.Symbol() == "," {
-			helpWrite(X.file, X.tokenizer.FormatTokenString())
-			X.tokenizer.Advance()
-		}
+	helpWrite(X.file, "<parameterList>\n") //start param list
+
+	helpWrite(X.file, X.tokenizer.FormatTokenString()) // write the type
+	X.tokenizer.Advance()
+	helpWrite(X.file, X.tokenizer.FormatTokenString()) // write the varName
+	X.tokenizer.Advance()
+
+	for X.tokenizer.Symbol() == "," {
+		helpWrite(X.file, X.tokenizer.FormatTokenString()) // write the comma
+		X.tokenizer.Advance()
+		helpWrite(X.file, X.tokenizer.FormatTokenString()) // write the type
+		X.tokenizer.Advance()
+		helpWrite(X.file, X.tokenizer.FormatTokenString()) // write the varName
+		X.tokenizer.Advance()
 	}
 
 	helpWrite(X.file, "</parameterList>\n")
@@ -484,7 +489,7 @@ func (X *CompilationEngine) CompileTerm() {
 func (X *CompilationEngine) CompileExpressionList() {
 	// As expressionLists always have a ')' after, check if it does, if so the expression list is empty
 	if X.tokenizer.Symbol() == ")" {
-		helpWrite(X.file, "<expressionList>\n</expressionList>\n")
+		helpWrite(X.file, "<expressionList> </expressionList>\n")
 		// no need to advacnce, the ') is part of the caller of expressionList
 		return
 	}
