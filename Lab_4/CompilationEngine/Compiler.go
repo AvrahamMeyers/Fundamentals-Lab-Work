@@ -444,38 +444,44 @@ func (X *CompilationEngine) CompileSubroutineCall() {
 func (X *CompilationEngine) CompileTerm() {
 	helpWrite(X.file, "<term>\n")
 
-	// write the first (and maybe only) token including possibly varName, '(', or unaryOp
-	helpWrite(X.file, X.tokenizer.FormatTokenString())
-
 	var firstType string = X.tokenizer.TokenType()
-	var firstToken string = X.tokenizer.Token
-	X.tokenizer.Advance()
 
 	if firstType == "INT_CONST" || firstType == "STRING_CONST" || firstType == "KEYWORD" {
-		// Nothing else needs to be done
+		helpWrite(X.file, X.tokenizer.FormatTokenString()) // write the constant or keyword
+		X.tokenizer.Advance()
 
 	} else if firstType == "IDENTIFIER" { // varName | varName '[' expression ']' | subroutineCall
+		var lookahead Tokenizer.Tokenizer = X.tokenizer
+		lookahead.Advance()
 
-		if X.tokenizer.Token == "[" { // varName '[' expression ']'
+		if lookahead.Token == "[" { // varName '[' expression ']'
+			helpWrite(X.file, X.tokenizer.FormatTokenString()) // write the varName
+			X.tokenizer.Advance()
 			helpWrite(X.file, X.tokenizer.FormatTokenString()) // write the '['
 			X.tokenizer.Advance()
 			X.CompileExpression()
 			helpWrite(X.file, X.tokenizer.FormatTokenString()) // write the ']'
 			X.tokenizer.Advance()
 
-		} else if X.tokenizer.Token == "(" || X.tokenizer.Token == "." { // subroutineCall
+		} else if lookahead.Token == "(" || lookahead.Token == "." { // subroutineCall
 			X.CompileSubroutineCall()
 
-		} // else { // just varName
-		// Nothing else needs to be done, as the varName has already been written
+		} else { // just varName
+			helpWrite(X.file, X.tokenizer.FormatTokenString()) // write the varName
+			X.tokenizer.Advance()
+		}
 
 	} else if firstType == "SYMBOL" { // '(' expression ')' | unaryOp term
-		if firstToken == "(" { // '(' expression ')'
+		if X.tokenizer.Token == "(" { // '(' expression ')'
+			helpWrite(X.file, X.tokenizer.FormatTokenString()) // write the '('
+			X.tokenizer.Advance()
 			X.CompileExpression()
 			helpWrite(X.file, X.tokenizer.FormatTokenString()) // write the ')'
 			X.tokenizer.Advance()
 
 		} else { // unaryOp term
+			helpWrite(X.file, X.tokenizer.FormatTokenString()) // write the unaryOp
+			X.tokenizer.Advance()
 			X.CompileTerm()
 		}
 	}
@@ -496,7 +502,6 @@ func (X *CompilationEngine) CompileExpressionList() {
 
 	// expression
 	X.CompileExpression()
-	//X.tokenizer.Advance()
 
 	//(',' expression)*
 	for X.tokenizer.Symbol() == "," {
