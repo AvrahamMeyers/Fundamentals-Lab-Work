@@ -269,6 +269,7 @@ func (X *CompilationEngine) CompileStatements() {
 }
 
 // Compiles a do statement.
+// 'do' subroutineCall ';'
 func (X *CompilationEngine) CompileDo() {
 	helpWrite(X.file, "<doStatement>\n")
 	//do
@@ -494,8 +495,8 @@ func (X *CompilationEngine) CompileTerm() {
 func (X *CompilationEngine) CompileExpressionList() {
 	// As expressionLists always have a ')' after, check if it does, if so the expression list is empty
 	if X.tokenizer.Symbol() == ")" {
-		helpWrite(X.file, "<expressionList> </expressionList>\n")
-		X.tokenizer.Advance()
+		helpWrite(X.file, "<expressionList>\n</expressionList>\n")
+		// no need to advacnce, the ') is part of the caller of expressionList
 		return
 	}
 	helpWrite(X.file, "<expressionList>\n")

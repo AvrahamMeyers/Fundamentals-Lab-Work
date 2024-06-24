@@ -33,10 +33,10 @@ func print_tokenizer_token_info(tokenizer Tokenizer.Tokenizer) {
 	fmt.Println()
 }
 
-func test_tokenizer() {
-	filepath := "test.jack"
+func test_tokenizer(filepath string, folderpath string) {
+	// filepath := "test.jack"
 
-	folderpath := "C:\\Users\\csfwn\\school\\Fundamentals\\Fundamentals-Lab-Work\\Fundamentals-Lab-Work\\Lab_4\\Tokenizer"
+	// folderpath := "C:\\Users\\csfwn\\school\\Fundamentals\\Fundamentals-Lab-Work\\Fundamentals-Lab-Work\\Lab_4\\Tokenizer"
 
 	var tokenizer Tokenizer.Tokenizer
 	tokenizer.Constructor(filepath, folderpath)
@@ -105,10 +105,10 @@ func compilation_main() {
 		compiler.Constructor(file_title, folder_path)
 
 		fmt.Println("End of input file: ", file_title)
+		// test_tokenizer(file_title, folder_path)
 	}
 }
 
 func main() {
-	// test_tokenizer()
 	compilation_main()
 }
