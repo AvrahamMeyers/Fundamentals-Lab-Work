@@ -238,6 +238,12 @@ func (X *CompilationEngine) CompileVarDec() {
 
 // Compiles a sequence of statements, not including the enclosing ‘‘{}’’.
 func (X *CompilationEngine) CompileStatements() {
+
+	if X.tokenizer.Token == "}" {
+		helpWrite(X.file, "<statements> </statements>\n")
+		return
+	}
+
 	helpWrite(X.file, "<statements>\n")
 	for X.tokenizer.KeyWord() == "let" ||
 		X.tokenizer.KeyWord() == "if" ||
