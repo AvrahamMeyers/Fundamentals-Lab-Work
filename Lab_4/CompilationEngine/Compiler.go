@@ -41,8 +41,9 @@ func (X *CompilationEngine) Constructor(fileName string, folderpath string) {
 	// 	fmt.Println("Error appending to file:", err)
 	// 	return
 	// }
-	file, err := os.OpenFile(fileName+"New"+".xml", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	file, err := os.OpenFile("test1expressionlesssquare/"+fileName+"New"+".xml", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
+		fmt.Println("creating file in constructor compile error")
 		return
 	}
 	defer file.Close()
