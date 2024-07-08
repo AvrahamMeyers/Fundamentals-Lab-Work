@@ -45,7 +45,7 @@ func (X *CompilationEngine) Constructor(fileName string, folderpath string) {
 	// }
 	file, err := os.OpenFile("test1expressionlesssquare/"+fileName+"New"+".xml", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
-		fmt.Println("creating file in constructor compile error")
+		fmt.Println("Error creating file in compiler constructor")
 		return
 	}
 	defer file.Close()
