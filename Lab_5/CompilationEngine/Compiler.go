@@ -43,7 +43,7 @@ func (X *CompilationEngine) Constructor(fileName string, folderpath string) {
 	// 	fmt.Println("Error appending to file:", err)
 	// 	return
 	// }
-	file, err := os.OpenFile("test1expressionlesssquare/"+fileName+"New"+".xml", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	file, err := os.OpenFile("test/"+fileName+"New"+".xml", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
 		fmt.Println("Error creating file in compiler constructor")
 		return
@@ -243,7 +243,7 @@ func (X *CompilationEngine) CompileVarDec() {
 		X.tokenizer.Advance()
 
 		//varName
-		helpWrite(X.file, X.tokenizer.FormatTokenString())
+		// helpWrite(X.file, X.tokenizer.FormatTokenString())
 		helpWrite(X.file, X.symbolTable.IdentifierToXML(X.tokenizer.Token, true))
 		X.tokenizer.Advance()
 
@@ -253,7 +253,7 @@ func (X *CompilationEngine) CompileVarDec() {
 			X.tokenizer.Advance()
 
 			//varName
-			helpWrite(X.file, X.tokenizer.FormatTokenString())
+			// helpWrite(X.file, X.tokenizer.FormatTokenString())
 			X.symbolTable.Define(X.tokenizer.Token, itsType, "VAR")
 			helpWrite(X.file, X.symbolTable.IdentifierToXML(X.tokenizer.Token, true))
 			X.tokenizer.Advance()
