@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/AvrahamMeyers/Fundamentals-Lab-Work/Lab_5/SymbolTable"
 	"github.com/AvrahamMeyers/Fundamentals-Lab-Work/Lab_5/Tokenizer"
 )
 
@@ -24,8 +25,9 @@ func helpWrite(file *os.File, text string) {
 // file is the file that the xml will be written to
 // tabAmount is the indentation level of the current line
 type CompilationEngine struct {
-	tokenizer Tokenizer.Tokenizer
-	file      *os.File
+	tokenizer   Tokenizer.Tokenizer
+	symbolTable SymbolTable.SymbolTable
+	file        *os.File
 }
 
 func (X *CompilationEngine) Constructor(fileName string, folderpath string) {
@@ -57,9 +59,11 @@ func (X *CompilationEngine) Constructor(fileName string, folderpath string) {
 }
 
 // Compiles a complete class.
+// class grammar: 'class'className'{'classVarDec*subroutineDec*'}'
 func (X *CompilationEngine) CompileClass() {
-	// class: 'class'className'{'classVarDec*subroutineDec*'}'
 	if X.tokenizer.KeyWord() == "class" {
+		// Make symbol tables for this class
+		X.symbolTable.Constructor()
 		helpWrite(X.file, "<class>\n")
 
 		//'class'
@@ -73,8 +77,7 @@ func (X *CompilationEngine) CompileClass() {
 		}
 		helpWrite(X.file, X.tokenizer.FormatTokenString())
 		X.tokenizer.Advance()
-		//X.CompileTerm()
-		//X.tokenizer.Advance()
+
 		//symbol {
 		if X.tokenizer.Symbol() != "{" {
 			//throw an error
@@ -89,11 +92,6 @@ func (X *CompilationEngine) CompileClass() {
 			X.CompileSubroutine()
 		}
 
-		//at this point we have reached the end of the class and should only have '}' left
-		// if X.tokenizer.Symbol() != "}" {
-		// 	//throw an error
-		// 	return
-		// }
 		helpWrite(X.file, X.tokenizer.FormatTokenString())
 
 		helpWrite(X.file, "</class>\n")
@@ -113,19 +111,26 @@ func (X *CompilationEngine) CompileClassVarDec() {
 
 	//it was already determined that the current token is static or field
 	helpWrite(X.file, X.tokenizer.FormatTokenString()) // write static or field
+	var itsKind string = X.tokenizer.Token
+
 	X.tokenizer.Advance()
 
 	helpWrite(X.file, X.tokenizer.FormatTokenString()) // write the type
+	var itsType string = X.tokenizer.Token
 	X.tokenizer.Advance()
 
-	helpWrite(X.file, X.tokenizer.FormatTokenString()) // write varname
+	// helpWrite(X.file, X.tokenizer.FormatTokenString()) // write varname
+	X.symbolTable.Define(X.tokenizer.Token, itsType, itsKind)
+	X.symbolTable.IdentifierToXML(X.tokenizer.Token, true)
 	X.tokenizer.Advance()
 
 	for X.tokenizer.Token == "," {
 		helpWrite(X.file, X.tokenizer.FormatTokenString()) // write the ","
 		X.tokenizer.Advance()
 
-		helpWrite(X.file, X.tokenizer.FormatTokenString()) // write varname
+		// helpWrite(X.file, X.tokenizer.FormatTokenString()) // write varname
+		X.symbolTable.Define(X.tokenizer.Token, itsType, itsKind)
+		X.symbolTable.IdentifierToXML(X.tokenizer.Token, true)
 		X.tokenizer.Advance()
 	}
 
@@ -137,32 +142,38 @@ func (X *CompilationEngine) CompileClassVarDec() {
 
 // Compiles a complete method,
 // function, or constructor.
+// Grammar: ('constructor'|'function'|'method') ('void'|type)subroutineName'('parameterList')' subroutineBody
 func (X *CompilationEngine) CompileSubroutine() {
 	helpWrite(X.file, "<subroutineDec>\n")
 
-	// ('constructor'|'function'|'method') ('void'|type)subroutineName'('parameterList')' subroutineBody
 	helpWrite(X.file, X.tokenizer.FormatTokenString())
 	X.tokenizer.Advance()
+
 	//assumes next token is correct keyword void or type <keyword>
 	helpWrite(X.file, X.tokenizer.FormatTokenString())
 	X.tokenizer.Advance()
+
 	//assumes next token is correct subroutine name <identifier>
 	helpWrite(X.file, X.tokenizer.FormatTokenString())
 	X.tokenizer.Advance()
-	//assumes next toekn is correct <symbol>'('
+
+	//assumes next token is correct <symbol>'('
 	helpWrite(X.file, X.tokenizer.FormatTokenString())
 	X.tokenizer.Advance()
+
 	//call parameter list
 	X.CompileParameterList()
 	//assumes next token is correct <symbol ')'
 	helpWrite(X.file, X.tokenizer.FormatTokenString())
 	X.tokenizer.Advance()
+
 	//subroutine body
 	helpWrite(X.file, "<subroutineBody>\n")
 
 	//assumes next token is correct <symbol> '{'
 	helpWrite(X.file, X.tokenizer.FormatTokenString())
 	X.tokenizer.Advance()
+
 	//var declerations
 	X.CompileVarDec()
 	//statements
@@ -192,16 +203,25 @@ func (X *CompilationEngine) CompileParameterList() {
 	helpWrite(X.file, "<parameterList>\n") //start param list
 
 	helpWrite(X.file, X.tokenizer.FormatTokenString()) // write the type
+	var itsType string = X.tokenizer.Token
 	X.tokenizer.Advance()
-	helpWrite(X.file, X.tokenizer.FormatTokenString()) // write the varName
+
+	// helpWrite(X.file, X.tokenizer.FormatTokenString()) // write the varName
+	X.symbolTable.Define(X.tokenizer.Token, itsType, "ARG")
+	X.symbolTable.IdentifierToXML(X.tokenizer.Token, true)
 	X.tokenizer.Advance()
 
 	for X.tokenizer.Symbol() == "," {
 		helpWrite(X.file, X.tokenizer.FormatTokenString()) // write the comma
 		X.tokenizer.Advance()
+
 		helpWrite(X.file, X.tokenizer.FormatTokenString()) // write the type
+		itsType = X.tokenizer.Token
 		X.tokenizer.Advance()
-		helpWrite(X.file, X.tokenizer.FormatTokenString()) // write the varName
+
+		// helpWrite(X.file, X.tokenizer.FormatTokenString()) // write the varName
+		X.symbolTable.Define(X.tokenizer.Token, itsType, "ARG")
+		X.symbolTable.IdentifierToXML(X.tokenizer.Token, true)
 		X.tokenizer.Advance()
 	}
 
@@ -215,18 +235,26 @@ func (X *CompilationEngine) CompileVarDec() {
 		//var
 		helpWrite(X.file, X.tokenizer.FormatTokenString())
 		X.tokenizer.Advance()
+
 		//type
 		helpWrite(X.file, X.tokenizer.FormatTokenString())
+		var itsType string = X.tokenizer.Token
 		X.tokenizer.Advance()
+
 		//varName
 		helpWrite(X.file, X.tokenizer.FormatTokenString())
+		X.symbolTable.IdentifierToXML(X.tokenizer.Token, true)
 		X.tokenizer.Advance()
+
 		for X.tokenizer.Symbol() == "," {
 			//,
 			helpWrite(X.file, X.tokenizer.FormatTokenString())
 			X.tokenizer.Advance()
+
 			//varName
 			helpWrite(X.file, X.tokenizer.FormatTokenString())
+			X.symbolTable.Define(X.tokenizer.Token, itsType, "VAR")
+			X.symbolTable.IdentifierToXML(X.tokenizer.Token, true)
 			X.tokenizer.Advance()
 		}
 		//;
@@ -289,9 +317,12 @@ func (X *CompilationEngine) CompileLet() {
 	//let
 	helpWrite(X.file, X.tokenizer.FormatTokenString())
 	X.tokenizer.Advance()
+
 	//varName
-	helpWrite(X.file, X.tokenizer.FormatTokenString())
+	// helpWrite(X.file, X.tokenizer.FormatTokenString())
+	X.symbolTable.IdentifierToXML(X.tokenizer.Token, false)
 	X.tokenizer.Advance()
+
 	// [expression]?
 	if X.tokenizer.Symbol() == "[" {
 		//[
@@ -457,8 +488,10 @@ func (X *CompilationEngine) CompileTerm() {
 		lookahead.Advance()
 
 		if lookahead.Token == "[" { // varName '[' expression ']'
-			helpWrite(X.file, X.tokenizer.FormatTokenString()) // write the varName
+			// helpWrite(X.file, X.tokenizer.FormatTokenString()) // write the varName
+			X.symbolTable.IdentifierToXML(X.tokenizer.Token, false)
 			X.tokenizer.Advance()
+
 			helpWrite(X.file, X.tokenizer.FormatTokenString()) // write the '['
 			X.tokenizer.Advance()
 			X.CompileExpression()
@@ -469,7 +502,8 @@ func (X *CompilationEngine) CompileTerm() {
 			X.CompileSubroutineCall()
 
 		} else { // just varName
-			helpWrite(X.file, X.tokenizer.FormatTokenString()) // write the varName
+			// helpWrite(X.file, X.tokenizer.FormatTokenString()) // write the varName
+			X.symbolTable.IdentifierToXML(X.tokenizer.Token, false)
 			X.tokenizer.Advance()
 		}
 

@@ -1,5 +1,9 @@
 package SymbolTable
 
+import (
+	"strconv"
+)
+
 // Name is the identifier of the variable
 // Type of the variable (int, string, etc.)
 // Kind of the variable (STATIC, FIELD, ARG, VAR)
@@ -86,4 +90,15 @@ func (X *SymbolTable) IndexOf(name string) int {
 	} else {
 		return X.ClassScope[name].Index
 	}
+}
+
+// Returns test XML string for testing the symbol table rows
+func (X *SymbolTable) IdentifierToXML(name string, isDeclaration bool) string {
+	return "<identifier>\n" +
+		"<name>" + name + "</name>\n" +
+		"<isDeclaration>" + strconv.FormatBool(isDeclaration) + "</isDeclaration>\n " +
+		"<type>" + X.TypeOf(name) + "</type>\n" +
+		"<kind>" + X.KindOf(name) + "</kind>\n" +
+		"<index>" + strconv.Itoa(X.IndexOf(name)) + "</index>\n" +
+		"</identifier>\n"
 }
