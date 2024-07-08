@@ -6,7 +6,7 @@ import (
 
 // Name is the identifier of the variable
 // Type of the variable (int, string, etc.)
-// Kind of the variable (STATIC, FIELD, ARG, VAR)
+// Kind of the variable (static, field, ARG, VAR)
 // Index is the running index of the variable in the current scope
 type SymbolRow struct {
 	Name  string
@@ -33,19 +33,19 @@ func (X *SymbolTable) StartSubroutine() {
 
 // Defines a new identifier of a given name, type, and kind and assigns it
 // a running index and puts it in the current scope
-func (X *SymbolTable) Define(name string, typ string, kind string) {
-	if kind == "STATIC" || kind == "FIELD" {
-		X.ClassScope[name] = SymbolRow{name, kind, typ, X.VarCount(kind)}
+func (X *SymbolTable) Define(name string, itsType string, kind string) {
+	if kind == "static" || kind == "field" {
+		X.ClassScope[name] = SymbolRow{name, kind, itsType, X.VarCount(kind)}
 	} else {
-		X.SubroutineScope[name] = SymbolRow{name, kind, typ, X.VarCount(kind)}
+		X.SubroutineScope[name] = SymbolRow{name, kind, itsType, X.VarCount(kind)}
 	}
 }
 
 // Returns the number of variables of the given kind already defined in the current scope
-// Kind can be STATIC, FIELD, ARG, VAR.
+// Kind can be static, field, ARG, VAR.
 func (X *SymbolTable) VarCount(kind string) int {
 	count := 0
-	if kind == "STATIC" || kind == "FIELD" {
+	if kind == "static" || kind == "field" {
 		for _, v := range X.ClassScope {
 			if v.Kind == kind {
 				count++
@@ -62,7 +62,7 @@ func (X *SymbolTable) VarCount(kind string) int {
 }
 
 // Returns the kind of the named identifier in the current scope.
-// Kind can be STATIC, FIELD, ARG, VAR.
+// Kind can be static, field, ARG, VAR.
 // If the identifier is unknown in the current scope, returns NONE.
 func (X *SymbolTable) KindOf(name string) string {
 	if _, ok := X.SubroutineScope[name]; ok { // If the identifier is in the subroutine scope (if the key value pair exists)
