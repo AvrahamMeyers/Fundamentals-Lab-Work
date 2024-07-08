@@ -121,7 +121,8 @@ func (X *CompilationEngine) CompileClassVarDec() {
 
 	// helpWrite(X.file, X.tokenizer.FormatTokenString()) // write varname
 	X.symbolTable.Define(X.tokenizer.Token, itsType, itsKind)
-	X.symbolTable.IdentifierToXML(X.tokenizer.Token, true)
+	helpWrite(X.file, X.symbolTable.IdentifierToXML(X.tokenizer.Token, true))
+
 	X.tokenizer.Advance()
 
 	for X.tokenizer.Token == "," {
@@ -130,7 +131,7 @@ func (X *CompilationEngine) CompileClassVarDec() {
 
 		// helpWrite(X.file, X.tokenizer.FormatTokenString()) // write varname
 		X.symbolTable.Define(X.tokenizer.Token, itsType, itsKind)
-		X.symbolTable.IdentifierToXML(X.tokenizer.Token, true)
+		helpWrite(X.file, X.symbolTable.IdentifierToXML(X.tokenizer.Token, true))
 		X.tokenizer.Advance()
 	}
 
@@ -208,7 +209,7 @@ func (X *CompilationEngine) CompileParameterList() {
 
 	// helpWrite(X.file, X.tokenizer.FormatTokenString()) // write the varName
 	X.symbolTable.Define(X.tokenizer.Token, itsType, "ARG")
-	X.symbolTable.IdentifierToXML(X.tokenizer.Token, true)
+	helpWrite(X.file, X.symbolTable.IdentifierToXML(X.tokenizer.Token, true))
 	X.tokenizer.Advance()
 
 	for X.tokenizer.Symbol() == "," {
@@ -221,7 +222,7 @@ func (X *CompilationEngine) CompileParameterList() {
 
 		// helpWrite(X.file, X.tokenizer.FormatTokenString()) // write the varName
 		X.symbolTable.Define(X.tokenizer.Token, itsType, "ARG")
-		X.symbolTable.IdentifierToXML(X.tokenizer.Token, true)
+		helpWrite(X.file, X.symbolTable.IdentifierToXML(X.tokenizer.Token, true))
 		X.tokenizer.Advance()
 	}
 
@@ -243,7 +244,7 @@ func (X *CompilationEngine) CompileVarDec() {
 
 		//varName
 		helpWrite(X.file, X.tokenizer.FormatTokenString())
-		X.symbolTable.IdentifierToXML(X.tokenizer.Token, true)
+		helpWrite(X.file, X.symbolTable.IdentifierToXML(X.tokenizer.Token, true))
 		X.tokenizer.Advance()
 
 		for X.tokenizer.Symbol() == "," {
@@ -254,7 +255,7 @@ func (X *CompilationEngine) CompileVarDec() {
 			//varName
 			helpWrite(X.file, X.tokenizer.FormatTokenString())
 			X.symbolTable.Define(X.tokenizer.Token, itsType, "VAR")
-			X.symbolTable.IdentifierToXML(X.tokenizer.Token, true)
+			helpWrite(X.file, X.symbolTable.IdentifierToXML(X.tokenizer.Token, true))
 			X.tokenizer.Advance()
 		}
 		//;
@@ -320,7 +321,7 @@ func (X *CompilationEngine) CompileLet() {
 
 	//varName
 	// helpWrite(X.file, X.tokenizer.FormatTokenString())
-	X.symbolTable.IdentifierToXML(X.tokenizer.Token, false)
+	helpWrite(X.file, X.symbolTable.IdentifierToXML(X.tokenizer.Token, false))
 	X.tokenizer.Advance()
 
 	// [expression]?
@@ -489,7 +490,7 @@ func (X *CompilationEngine) CompileTerm() {
 
 		if lookahead.Token == "[" { // varName '[' expression ']'
 			// helpWrite(X.file, X.tokenizer.FormatTokenString()) // write the varName
-			X.symbolTable.IdentifierToXML(X.tokenizer.Token, false)
+			helpWrite(X.file, X.symbolTable.IdentifierToXML(X.tokenizer.Token, false))
 			X.tokenizer.Advance()
 
 			helpWrite(X.file, X.tokenizer.FormatTokenString()) // write the '['
@@ -503,7 +504,7 @@ func (X *CompilationEngine) CompileTerm() {
 
 		} else { // just varName
 			// helpWrite(X.file, X.tokenizer.FormatTokenString()) // write the varName
-			X.symbolTable.IdentifierToXML(X.tokenizer.Token, false)
+			helpWrite(X.file, X.symbolTable.IdentifierToXML(X.tokenizer.Token, false))
 			X.tokenizer.Advance()
 		}
 
