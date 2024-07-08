@@ -35,9 +35,9 @@ func (X *SymbolTable) StartSubroutine() {
 // a running index and puts it in the current scope
 func (X *SymbolTable) Define(name string, itsType string, kind string) {
 	if kind == "static" || kind == "field" {
-		X.ClassScope[name] = SymbolRow{name, kind, itsType, X.VarCount(kind)}
+		X.ClassScope[name] = SymbolRow{name, itsType, kind, X.VarCount(kind)}
 	} else {
-		X.SubroutineScope[name] = SymbolRow{name, kind, itsType, X.VarCount(kind)}
+		X.SubroutineScope[name] = SymbolRow{name, itsType, kind, X.VarCount(kind)}
 	}
 }
 
