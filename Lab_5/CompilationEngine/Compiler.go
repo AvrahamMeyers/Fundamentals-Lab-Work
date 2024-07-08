@@ -170,6 +170,7 @@ func (X *CompilationEngine) CompileSubroutine() {
 
 	//subroutine body
 	helpWrite(X.file, "<subroutineBody>\n")
+	X.symbolTable.StartSubroutine()
 
 	//assumes next token is correct <symbol> '{'
 	helpWrite(X.file, X.tokenizer.FormatTokenString())
@@ -230,6 +231,8 @@ func (X *CompilationEngine) CompileParameterList() {
 }
 
 // Compiles a var declaration.
+// Original grammar: 'var' type varName (',' varName)* ';'
+// Grammar changed to: ('var' type varName (',' varName)* ';')*
 func (X *CompilationEngine) CompileVarDec() {
 	for X.tokenizer.KeyWord() == "var" {
 		helpWrite(X.file, "<varDec>\n")
@@ -244,6 +247,7 @@ func (X *CompilationEngine) CompileVarDec() {
 
 		//varName
 		// helpWrite(X.file, X.tokenizer.FormatTokenString())
+		X.symbolTable.Define(X.tokenizer.Token, itsType, "VAR")
 		helpWrite(X.file, X.symbolTable.IdentifierToXML(X.tokenizer.Token, true))
 		X.tokenizer.Advance()
 
@@ -446,7 +450,13 @@ func (X *CompilationEngine) CompileExpression() {
 // Grammar: subroutineCall: subroutineName '(' expressionList ')' | (className |
 // varName) '.' subroutineName '(' expressionList ')'
 func (X *CompilationEngine) CompileSubroutineCall() {
-	helpWrite(X.file, X.tokenizer.FormatTokenString()) // write: subroutineName or className or varName
+
+	if X.symbolTable.KindOf(X.tokenizer.Token) == "NONE" {
+		helpWrite(X.file, X.tokenizer.FormatTokenString()) // write: subroutineName or className
+	} else {
+		helpWrite(X.file, X.symbolTable.IdentifierToXML(X.tokenizer.Token, false)) // write: varName
+	}
+
 	X.tokenizer.Advance()
 	if X.tokenizer.Token == "(" {
 		helpWrite(X.file, X.tokenizer.FormatTokenString()) // write: '('
