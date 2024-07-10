@@ -7,7 +7,27 @@ import (
 	"strings"
 
 	"github.com/AvrahamMeyers/Fundamentals-Lab-Work/Lab_5/CompilationEngine"
+	"github.com/AvrahamMeyers/Fundamentals-Lab-Work/Lab_5/VMWriter"
+	// "github.com/AvrahamMeyers/Fundamentals-Lab-Work/Lab_5/VMWriter"
 )
+
+func test_vm_writer() {
+	var writer VMWriter.VMWriter
+
+	writer.Constructor("test", "Lab_5")
+
+	writer.WritePush("CONST", 7)
+	writer.WritePop("LOCAL", 0)
+	writer.WritePush("ARG", 8)
+	writer.WriteArithmetic("ADD")
+	writer.WriteGoto("label1")
+	writer.WriteIf("label2")
+	writer.WriteCall("function", 2)
+	writer.WriteFunction("function", 3)
+	writer.WriteReturn()
+	writer.WriteLabel("label3")
+	writer.Close()
+}
 
 func readFolderPath() string {
 	reader := bufio.NewReader(os.Stdin)
@@ -58,4 +78,6 @@ func compilation_main() {
 
 func main() {
 	compilation_main()
+
+	// test_vm_writer()
 }

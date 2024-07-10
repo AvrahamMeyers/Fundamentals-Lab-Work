@@ -30,21 +30,21 @@ Index (int)
 */
 func (X *VMWriter) WritePush(segment string, index int) {
 	if segment == "CONST" {
-		X.file.WriteString("push constant " + string(index) + "\n")
+		X.file.WriteString("push constant " + fmt.Sprint(index) + "\n")
 	} else if segment == "ARG" {
-		X.file.WriteString("push argument " + string(index) + "\n")
+		X.file.WriteString("push argument " + fmt.Sprint(index) + "\n")
 	} else if segment == "LOCAL" {
-		X.file.WriteString("push local " + string(index) + "\n")
+		X.file.WriteString("push local " + fmt.Sprint(index) + "\n")
 	} else if segment == "STATIC" {
-		X.file.WriteString("push static " + string(index) + "\n")
+		X.file.WriteString("push static " + fmt.Sprint(index) + "\n")
 	} else if segment == "THIS" {
-		X.file.WriteString("push this " + string(index) + "\n")
+		X.file.WriteString("push this " + fmt.Sprint(index) + "\n")
 	} else if segment == "THAT" {
-		X.file.WriteString("push that " + string(index) + "\n")
+		X.file.WriteString("push that " + fmt.Sprint(index) + "\n")
 	} else if segment == "POINTER" {
-		X.file.WriteString("push pointer " + string(index) + "\n")
+		X.file.WriteString("push pointer " + fmt.Sprint(index) + "\n")
 	} else if segment == "TEMP" {
-		X.file.WriteString("push temp " + string(index) + "\n")
+		X.file.WriteString("push temp " + fmt.Sprint(index) + "\n")
 	}
 }
 
@@ -60,21 +60,21 @@ Index (int)
 */
 func (X *VMWriter) WritePop(segment string, index int) {
 	if segment == "CONST" {
-		X.file.WriteString("pop constant " + string(index) + "\n")
+		X.file.WriteString("pop constant " + fmt.Sprint(index) + "\n")
 	} else if segment == "ARG" {
-		X.file.WriteString("pop argument " + string(index) + "\n")
+		X.file.WriteString("pop argument " + fmt.Sprint(index) + "\n")
 	} else if segment == "LOCAL" {
-		X.file.WriteString("pop local " + string(index) + "\n")
+		X.file.WriteString("pop local " + fmt.Sprint(index) + "\n")
 	} else if segment == "STATIC" {
-		X.file.WriteString("pop static " + string(index) + "\n")
+		X.file.WriteString("pop static " + fmt.Sprint(index) + "\n")
 	} else if segment == "THIS" {
-		X.file.WriteString("pop this " + string(index) + "\n")
+		X.file.WriteString("pop this " + fmt.Sprint(index) + "\n")
 	} else if segment == "THAT" {
-		X.file.WriteString("pop that " + string(index) + "\n")
+		X.file.WriteString("pop that " + fmt.Sprint(index) + "\n")
 	} else if segment == "POINTER" {
-		X.file.WriteString("pop pointer " + string(index) + "\n")
+		X.file.WriteString("pop pointer " + fmt.Sprint(index) + "\n")
 	} else if segment == "TEMP" {
-		X.file.WriteString("pop temp " + string(index) + "\n")
+		X.file.WriteString("pop temp " + fmt.Sprint(index) + "\n")
 	}
 }
 
@@ -136,7 +136,7 @@ name (String)
 nArgs (int)
 */
 func (X *VMWriter) WriteCall(name string, nArgs int) {
-	X.file.WriteString("call " + name + " " + string(nArgs) + "\n")
+	X.file.WriteString("call " + name + " " + fmt.Sprint(nArgs) + "\n")
 }
 
 /*
@@ -146,7 +146,7 @@ name (String)
 nLocals (int)
 */
 func (X *VMWriter) WriteFunction(name string, nLocals int) {
-	X.file.WriteString("function " + name + " " + string(nLocals) + "\n")
+	X.file.WriteString("function " + name + " " + fmt.Sprint(nLocals) + "\n")
 }
 
 /*
