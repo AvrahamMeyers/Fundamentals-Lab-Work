@@ -1,0 +1,6 @@
+push constant 1
+push constant 2
+push constant 3
+Call Math.multiply 2
+add
+call printInt 1
