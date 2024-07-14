@@ -75,6 +75,7 @@ func (X *CompilationEngine) CompileClass() {
 			//throw an error
 			return
 		}
+		//class name
 		helpWrite(X.file, X.tokenizer.FormatTokenString())
 		X.tokenizer.Advance()
 
@@ -83,8 +84,11 @@ func (X *CompilationEngine) CompileClass() {
 			//throw an error
 			return
 		}
+		//{
 		helpWrite(X.file, X.tokenizer.FormatTokenString())
 		X.tokenizer.Advance()
+
+		//variable decl.
 		for X.tokenizer.KeyWord() == "static" || X.tokenizer.KeyWord() == "field" {
 			X.CompileClassVarDec()
 		}
