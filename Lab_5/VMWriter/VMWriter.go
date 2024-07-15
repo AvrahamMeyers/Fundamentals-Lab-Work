@@ -10,7 +10,7 @@ type VMWriter struct {
 }
 
 func (X *VMWriter) Constructor(fileName string, folderpath string) {
-	file, err := os.OpenFile("test/"+fileName+".vm", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	file, err := os.OpenFile("square/"+fileName+".vm", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
 		fmt.Println("Error creating file in VM writer constructor")
 		return

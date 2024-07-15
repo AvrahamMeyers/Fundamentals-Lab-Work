@@ -1,0 +1,140 @@
+function PongGame.new 0
+call Screen.clearScreen 0
+push constant 50
+push constant 230
+push constant 229
+push constant 7
+call Bat.new 4
+push constant 253
+push constant 222
+push constant 0
+push constant 511
+push constant 0
+push constant 229
+call Ball.new 6
+push constant 400
+push constant 0
+call ball.setDestination 2
+push constant 0
+push constant 238
+push constant 511
+push constant 240
+call Screen.drawRectangle 4
+push constant 22
+push constant 0
+call Output.moveCursor 2
+call Output.printString 1
+push constant 0
+push constant 0
+push constant 0
+return
+function PongGame.dispose 0
+call bat.dispose 0
+call ball.dispose 0
+call Memory.deAlloc 1
+return
+function PongGame.newInstance 0
+call PongGame.new 0
+return
+function PongGame.getInstance 0
+return
+function PongGame.run 0
+label LOOP
+if-goto END
+label LOOP
+push constant 0
+if-goto END
+call Keyboard.keyPressed 0
+call bat.move 0
+call moveBall 0
+push constant 50
+call Sys.wait 1
+goto LOOP
+label END
+push constant 130
+if-goto ELSE
+push constant 1
+call bat.setDirection 1
+goto END
+label ELSE
+push constant 132
+if-goto ELSE
+push constant 2
+call bat.setDirection 1
+goto END
+label ELSE
+push constant 140
+if-goto ELSE
+goto END
+label ELSE
+label END
+label END
+label END
+label LOOP
+push constant 0
+if-goto END
+call Keyboard.keyPressed 0
+call bat.move 0
+call moveBall 0
+push constant 50
+call Sys.wait 1
+goto LOOP
+label END
+goto LOOP
+label END
+if-goto ELSE
+push constant 10
+push constant 27
+call Output.moveCursor 2
+call Output.printString 1
+goto END
+label ELSE
+label END
+return
+function PongGame.moveBall 1
+call ball.move 0
+push constant 0
+if-goto ELSE
+push constant 0
+call bat.getLeft 0
+call bat.getRight 0
+call ball.getLeft 0
+call ball.getRight 0
+push constant 4
+if-goto ELSE
+if-goto ELSE
+push constant 10
+add
+if-goto ELSE
+push constant 1
+sub
+goto END
+label ELSE
+push constant 10
+sub
+if-goto ELSE
+push constant 1
+goto END
+label ELSE
+label END
+label END
+push constant 2
+sub
+call bat.setWidth 1
+push constant 1
+add
+push constant 22
+push constant 7
+call Output.moveCursor 2
+call Output.printInt 1
+goto END
+label ELSE
+label END
+goto END
+label ELSE
+label END
+call ball.bounce 1
+goto END
+label ELSE
+label END
+return

@@ -175,9 +175,9 @@ func (X *CompilationEngine) CompileSubroutine() {
 	X.tokenizer.Advance()
 
 	//call parameter list
-	i := X.CompileParameterList()
+	//i := X.CompileParameterList()
 	//declare the function label
-	X.vmwriter.WriteFunction(label, i)
+	X.vmwriter.WriteFunction(label, X.symbolTable.VarCount("VAR"))
 	//assumes next token is correct <symbol ')'
 	helpWrite(X.file, X.tokenizer.FormatTokenString())
 	X.tokenizer.Advance()
@@ -376,22 +376,26 @@ func (X *CompilationEngine) CompileWhile() {
 	//while
 	helpWrite(X.file, X.tokenizer.FormatTokenString())
 	X.tokenizer.Advance()
+	X.vmwriter.WriteLabel("LOOP")
 	//symbol (
 	helpWrite(X.file, X.tokenizer.FormatTokenString())
 	X.tokenizer.Advance()
 	X.CompileExpression()
 	//symbol )
 	helpWrite(X.file, X.tokenizer.FormatTokenString())
+	X.vmwriter.WriteIf("END")
 	X.tokenizer.Advance()
 	//symbol {
 	helpWrite(X.file, X.tokenizer.FormatTokenString())
 	X.tokenizer.Advance()
 	X.CompileStatements()
+	X.vmwriter.WriteGoto("LOOP")
 	// }
 	helpWrite(X.file, X.tokenizer.FormatTokenString())
 	X.tokenizer.Advance()
 
 	helpWrite(X.file, "</whileStatement>\n")
+	X.vmwriter.WriteLabel("END")
 }
 
 // Compiles a return statement.
@@ -406,7 +410,7 @@ func (X *CompilationEngine) CompileReturn() {
 	//symbol ;
 	helpWrite(X.file, X.tokenizer.FormatTokenString())
 	X.tokenizer.Advance()
-
+	X.vmwriter.WriteReturn()
 	helpWrite(X.file, "</returnStatement>\n")
 }
 
@@ -422,15 +426,19 @@ func (X *CompilationEngine) CompileIf() {
 	helpWrite(X.file, X.tokenizer.FormatTokenString())
 	X.tokenizer.Advance()
 	X.CompileExpression()
+	X.vmwriter.WriteIf("ELSE")
 	//symbol ')'
 	helpWrite(X.file, X.tokenizer.FormatTokenString())
+
 	X.tokenizer.Advance()
 	//symbol '{'
 	helpWrite(X.file, X.tokenizer.FormatTokenString())
 	X.tokenizer.Advance()
 	X.CompileStatements()
+	X.vmwriter.WriteGoto("END")
 	//symbol '}'
 	helpWrite(X.file, X.tokenizer.FormatTokenString())
+	X.vmwriter.WriteLabel("ELSE")
 	X.tokenizer.Advance()
 	if X.tokenizer.KeyWord() == "else" {
 		//else
@@ -445,6 +453,7 @@ func (X *CompilationEngine) CompileIf() {
 		X.tokenizer.Advance()
 	}
 	helpWrite(X.file, "</ifStatement>\n")
+	X.vmwriter.WriteLabel("END")
 }
 
 // Compiles an expression
