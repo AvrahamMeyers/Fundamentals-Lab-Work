@@ -32,6 +32,7 @@ type CompilationEngine struct {
 	file        *os.File
 	vmwriter    VMWriter.VMWriter
 	filename    string
+	loopCounter int
 }
 
 func (X *CompilationEngine) Constructor(fileName string, folderpath string) {
@@ -39,6 +40,8 @@ func (X *CompilationEngine) Constructor(fileName string, folderpath string) {
 
 	X.vmwriter.Constructor(fileName, "null for now")
 	X.filename = fileName
+
+	X.loopCounter = 0
 	// outputFile, err := os.Create(fileName + "T.xml")
 	// if err != nil {
 	// 	fmt.Println("Error creating file:", err)
@@ -376,26 +379,34 @@ func (X *CompilationEngine) CompileWhile() {
 	//while
 	helpWrite(X.file, X.tokenizer.FormatTokenString())
 	X.tokenizer.Advance()
-	X.vmwriter.WriteLabel("LOOP")
+
+	begin_loop_label := "LOOP" + strconv.Itoa(X.loopCounter)
+	X.vmwriter.WriteLabel(begin_loop_label)
+
 	//symbol (
 	helpWrite(X.file, X.tokenizer.FormatTokenString())
 	X.tokenizer.Advance()
 	X.CompileExpression()
 	//symbol )
 	helpWrite(X.file, X.tokenizer.FormatTokenString())
-	X.vmwriter.WriteIf("END")
+
+	end_label_loop := "END" + strconv.Itoa(X.loopCounter)
+	X.vmwriter.WriteIf(end_label_loop)
+
 	X.tokenizer.Advance()
 	//symbol {
 	helpWrite(X.file, X.tokenizer.FormatTokenString())
 	X.tokenizer.Advance()
 	X.CompileStatements()
-	X.vmwriter.WriteGoto("LOOP")
+
+	X.vmwriter.WriteGoto(begin_loop_label)
 	// }
 	helpWrite(X.file, X.tokenizer.FormatTokenString())
 	X.tokenizer.Advance()
 
 	helpWrite(X.file, "</whileStatement>\n")
-	X.vmwriter.WriteLabel("END")
+
+	X.vmwriter.WriteLabel(end_label_loop)
 }
 
 // Compiles a return statement.
