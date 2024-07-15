@@ -27,12 +27,12 @@ func helpWrite(file *os.File, text string) {
 // file is the file that the xml will be written to
 // tabAmount is the indentation level of the current line
 type CompilationEngine struct {
-	tokenizer   Tokenizer.Tokenizer
-	symbolTable SymbolTable.SymbolTable
-	file        *os.File
-	vmwriter    VMWriter.VMWriter
-	filename    string
-	loopCounter int
+	tokenizer    Tokenizer.Tokenizer
+	symbolTable  SymbolTable.SymbolTable
+	xmlFile      *os.File
+	vmwriter     VMWriter.VMWriter
+	filename     string
+	labelCounter int
 }
 
 func (X *CompilationEngine) Constructor(fileName string, folderpath string) {
@@ -41,8 +41,8 @@ func (X *CompilationEngine) Constructor(fileName string, folderpath string) {
 	X.vmwriter.Constructor(fileName, folderpath)
 	X.filename = fileName
 
-	X.loopCounter = 0
-	// outputFile, err := os.Create(fileName + "T.xml")
+	X.labelCounter = 0
+	// outputFile, err := os.Create(folderpath + "/" + fileName + "T.xml")
 	// if err != nil {
 	// 	fmt.Println("Error creating file:", err)
 	// 	return
@@ -53,13 +53,13 @@ func (X *CompilationEngine) Constructor(fileName string, folderpath string) {
 	// 	fmt.Println("Error appending to file:", err)
 	// 	return
 	// }
-	file, err := os.OpenFile("test/"+fileName+"New"+".xml", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	file, err := os.OpenFile(folderpath+"/"+fileName+".xml", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
 		fmt.Println("Error creating file in compiler constructor")
 		return
 	}
 	defer file.Close()
-	X.file = file
+	X.xmlFile = file
 
 	X.tokenizer.Advance()
 	//fmt.Println(X.tokenizer.HasMoreTokens())
@@ -74,10 +74,10 @@ func (X *CompilationEngine) CompileClass() {
 	if X.tokenizer.KeyWord() == "class" {
 		// Make symbol tables for this class
 		X.symbolTable.Constructor()
-		helpWrite(X.file, "<class>\n")
+		helpWrite(X.xmlFile, "<class>\n")
 
 		//'class'
-		helpWrite(X.file, X.tokenizer.FormatTokenString())
+		helpWrite(X.xmlFile, X.tokenizer.FormatTokenString())
 		X.tokenizer.Advance()
 
 		//className (identifier)
@@ -86,7 +86,7 @@ func (X *CompilationEngine) CompileClass() {
 			return
 		}
 		//class name
-		helpWrite(X.file, X.tokenizer.FormatTokenString())
+		helpWrite(X.xmlFile, X.tokenizer.FormatTokenString())
 		X.tokenizer.Advance()
 
 		//symbol {
@@ -95,7 +95,7 @@ func (X *CompilationEngine) CompileClass() {
 			return
 		}
 		//{
-		helpWrite(X.file, X.tokenizer.FormatTokenString())
+		helpWrite(X.xmlFile, X.tokenizer.FormatTokenString())
 		X.tokenizer.Advance()
 
 		//variable decl.
@@ -106,9 +106,9 @@ func (X *CompilationEngine) CompileClass() {
 			X.CompileSubroutine()
 		}
 
-		helpWrite(X.file, X.tokenizer.FormatTokenString())
+		helpWrite(X.xmlFile, X.tokenizer.FormatTokenString())
 
-		helpWrite(X.file, "</class>\n")
+		helpWrite(X.xmlFile, "</class>\n")
 
 	} else {
 		fmt.Println("There's a problem with the file it does not begin with class")
@@ -121,91 +121,95 @@ a field declaration.
 Grammar:  ('static'|'field') type varName (',' varName)* ';'
 */
 func (X *CompilationEngine) CompileClassVarDec() {
-	helpWrite(X.file, "<classVarDec>\n")
+	helpWrite(X.xmlFile, "<classVarDec>\n")
 
 	//it was already determined that the current token is static or field
-	helpWrite(X.file, X.tokenizer.FormatTokenString()) // write static or field
+	helpWrite(X.xmlFile, X.tokenizer.FormatTokenString()) // write static or field
 	var itsKind string = X.tokenizer.Token
 
 	X.tokenizer.Advance()
 
-	helpWrite(X.file, X.tokenizer.FormatTokenString()) // write the type
+	helpWrite(X.xmlFile, X.tokenizer.FormatTokenString()) // write the type
 	var itsType string = X.tokenizer.Token
 	X.tokenizer.Advance()
 
 	// helpWrite(X.file, X.tokenizer.FormatTokenString()) // write varname
 	X.symbolTable.Define(X.tokenizer.Token, itsType, itsKind)
-	helpWrite(X.file, X.symbolTable.IdentifierToXML(X.tokenizer.Token, true))
+	helpWrite(X.xmlFile, X.symbolTable.IdentifierToXML(X.tokenizer.Token, true))
 
 	X.tokenizer.Advance()
 
 	for X.tokenizer.Token == "," {
-		helpWrite(X.file, X.tokenizer.FormatTokenString()) // write the ","
+		helpWrite(X.xmlFile, X.tokenizer.FormatTokenString()) // write the ","
 		X.tokenizer.Advance()
 
 		// helpWrite(X.file, X.tokenizer.FormatTokenString()) // write varname
 		X.symbolTable.Define(X.tokenizer.Token, itsType, itsKind)
-		helpWrite(X.file, X.symbolTable.IdentifierToXML(X.tokenizer.Token, true))
+		helpWrite(X.xmlFile, X.symbolTable.IdentifierToXML(X.tokenizer.Token, true))
 		X.tokenizer.Advance()
 	}
 
-	helpWrite(X.file, X.tokenizer.FormatTokenString()) // write the ";"
+	helpWrite(X.xmlFile, X.tokenizer.FormatTokenString()) // write the ";"
 	X.tokenizer.Advance()
 
-	helpWrite(X.file, "</classVarDec>\n")
+	helpWrite(X.xmlFile, "</classVarDec>\n")
 }
 
 // Compiles a complete method,
 // function, or constructor.
 // Grammar: ('constructor'|'function'|'method') ('void'|type)subroutineName'('parameterList')' subroutineBody
 func (X *CompilationEngine) CompileSubroutine() {
-	helpWrite(X.file, "<subroutineDec>\n")
+	helpWrite(X.xmlFile, "<subroutineDec>\n")
 
-	helpWrite(X.file, X.tokenizer.FormatTokenString())
+	helpWrite(X.xmlFile, X.tokenizer.FormatTokenString())
 	X.tokenizer.Advance()
 
 	//assumes next token is correct keyword void or type <keyword>
-	helpWrite(X.file, X.tokenizer.FormatTokenString())
+	helpWrite(X.xmlFile, X.tokenizer.FormatTokenString())
 	X.tokenizer.Advance()
 
 	//assumes next token is correct subroutine name <identifier>
-	helpWrite(X.file, X.tokenizer.FormatTokenString())
+	helpWrite(X.xmlFile, X.tokenizer.FormatTokenString())
 	label := X.filename + "." + X.tokenizer.Token
 	X.tokenizer.Advance()
 
 	//assumes next token is correct <symbol>'('
-	helpWrite(X.file, X.tokenizer.FormatTokenString())
+	helpWrite(X.xmlFile, X.tokenizer.FormatTokenString())
 	X.tokenizer.Advance()
 
 	//call parameter list
-	//i := X.CompileParameterList()
+	X.CompileParameterList()
 	//declare the function label
-	X.vmwriter.WriteFunction(label, X.symbolTable.VarCount("VAR"))
-	//assumes next token is correct <symbol ')'
-	helpWrite(X.file, X.tokenizer.FormatTokenString())
+
+	//assumes next token is correct symbol ')'
+	helpWrite(X.xmlFile, X.tokenizer.FormatTokenString())
 	X.tokenizer.Advance()
 
 	//subroutine body
-	helpWrite(X.file, "<subroutineBody>\n")
+	helpWrite(X.xmlFile, "<subroutineBody>\n")
 	X.symbolTable.StartSubroutine()
 
 	//assumes next token is correct <symbol> '{'
-	helpWrite(X.file, X.tokenizer.FormatTokenString())
+	helpWrite(X.xmlFile, X.tokenizer.FormatTokenString())
 	X.tokenizer.Advance()
 
 	//var declerations
 	X.CompileVarDec()
+	X.vmwriter.WriteFunction(label, X.symbolTable.VarCount("VAR"))
+	fmt.Println("VarDec done " + label)
+	fmt.Println(X.symbolTable.VarCount("VAR"))
 	//statements
 	X.CompileStatements()
+	fmt.Println("Statements done " + label)
 
 	//assumes next token is correct <symbol> '}'
-	helpWrite(X.file, X.tokenizer.FormatTokenString())
+	helpWrite(X.xmlFile, X.tokenizer.FormatTokenString())
 	X.tokenizer.Advance()
 	//end subroutine body </subroutineBody>
 
-	helpWrite(X.file, "</subroutineBody>\n")
+	helpWrite(X.xmlFile, "</subroutineBody>\n")
 
-	helpWrite(X.file, "</subroutineDec>\n")
+	helpWrite(X.xmlFile, "</subroutineDec>\n")
 }
 
 // Compiles a (possibly empty) parameter list, not including the enclosing ‘‘()’’.
@@ -214,38 +218,38 @@ func (X *CompilationEngine) CompileParameterList() int {
 
 	// As expressionLists always have a ')' after, check if it does, if so the expression list is empty
 	if X.tokenizer.Symbol() == ")" {
-		helpWrite(X.file, "<parameterList> </parameterList>\n")
+		helpWrite(X.xmlFile, "<parameterList> </parameterList>\n")
 		// no need to advacnce, the ') is part of the caller of parameterList
 		return 0
 	}
 
-	helpWrite(X.file, "<parameterList>\n") //start param list
+	helpWrite(X.xmlFile, "<parameterList>\n") //start param list
 
-	helpWrite(X.file, X.tokenizer.FormatTokenString()) // write the type
+	helpWrite(X.xmlFile, X.tokenizer.FormatTokenString()) // write the type
 	var itsType string = X.tokenizer.Token
 	X.tokenizer.Advance()
 	i := 1
 	// helpWrite(X.file, X.tokenizer.FormatTokenString()) // write the varName
 	X.symbolTable.Define(X.tokenizer.Token, itsType, "ARG")
-	helpWrite(X.file, X.symbolTable.IdentifierToXML(X.tokenizer.Token, true))
+	helpWrite(X.xmlFile, X.symbolTable.IdentifierToXML(X.tokenizer.Token, true))
 	X.tokenizer.Advance()
 
 	for X.tokenizer.Symbol() == "," {
 		i += 1
-		helpWrite(X.file, X.tokenizer.FormatTokenString()) // write the comma
+		helpWrite(X.xmlFile, X.tokenizer.FormatTokenString()) // write the comma
 		X.tokenizer.Advance()
 
-		helpWrite(X.file, X.tokenizer.FormatTokenString()) // write the type
+		helpWrite(X.xmlFile, X.tokenizer.FormatTokenString()) // write the type
 		itsType = X.tokenizer.Token
 		X.tokenizer.Advance()
 
 		// helpWrite(X.file, X.tokenizer.FormatTokenString()) // write the varName
 		X.symbolTable.Define(X.tokenizer.Token, itsType, "ARG")
-		helpWrite(X.file, X.symbolTable.IdentifierToXML(X.tokenizer.Token, true))
+		helpWrite(X.xmlFile, X.symbolTable.IdentifierToXML(X.tokenizer.Token, true))
 		X.tokenizer.Advance()
 	}
 
-	helpWrite(X.file, "</parameterList>\n")
+	helpWrite(X.xmlFile, "</parameterList>\n")
 	return i
 }
 
@@ -254,38 +258,37 @@ func (X *CompilationEngine) CompileParameterList() int {
 // Grammar changed to: ('var' type varName (',' varName)* ';')*
 func (X *CompilationEngine) CompileVarDec() {
 	for X.tokenizer.KeyWord() == "var" {
-		helpWrite(X.file, "<varDec>\n")
+		helpWrite(X.xmlFile, "<varDec>\n")
 		//var
-		helpWrite(X.file, X.tokenizer.FormatTokenString())
+		helpWrite(X.xmlFile, X.tokenizer.FormatTokenString())
 		X.tokenizer.Advance()
 
 		//type
-		helpWrite(X.file, X.tokenizer.FormatTokenString())
+		helpWrite(X.xmlFile, X.tokenizer.FormatTokenString())
 		var itsType string = X.tokenizer.Token
 		X.tokenizer.Advance()
 
 		//varName
 		// helpWrite(X.file, X.tokenizer.FormatTokenString())
 		X.symbolTable.Define(X.tokenizer.Token, itsType, "VAR")
-		helpWrite(X.file, X.symbolTable.IdentifierToXML(X.tokenizer.Token, true))
+		helpWrite(X.xmlFile, X.symbolTable.IdentifierToXML(X.tokenizer.Token, true))
 		X.tokenizer.Advance()
 
 		for X.tokenizer.Symbol() == "," {
 			//,
-			helpWrite(X.file, X.tokenizer.FormatTokenString())
+			helpWrite(X.xmlFile, X.tokenizer.FormatTokenString())
 			X.tokenizer.Advance()
 
 			//varName
 			// helpWrite(X.file, X.tokenizer.FormatTokenString())
 			X.symbolTable.Define(X.tokenizer.Token, itsType, "VAR")
-			helpWrite(X.file, X.symbolTable.IdentifierToXML(X.tokenizer.Token, true))
+			helpWrite(X.xmlFile, X.symbolTable.IdentifierToXML(X.tokenizer.Token, true))
 			X.tokenizer.Advance()
 		}
 		//;
-		helpWrite(X.file, X.tokenizer.FormatTokenString())
+		helpWrite(X.xmlFile, X.tokenizer.FormatTokenString())
 		X.tokenizer.Advance()
-		helpWrite(X.file, "</varDec>\n")
-
+		helpWrite(X.xmlFile, "</varDec>\n")
 	}
 }
 
@@ -293,11 +296,11 @@ func (X *CompilationEngine) CompileVarDec() {
 func (X *CompilationEngine) CompileStatements() {
 
 	if X.tokenizer.Token == "}" {
-		helpWrite(X.file, "<statements> </statements>\n")
+		helpWrite(X.xmlFile, "<statements> </statements>\n")
 		return
 	}
 
-	helpWrite(X.file, "<statements>\n")
+	helpWrite(X.xmlFile, "<statements>\n")
 	for X.tokenizer.KeyWord() == "let" ||
 		X.tokenizer.KeyWord() == "if" ||
 		X.tokenizer.KeyWord() == "while" ||
@@ -318,29 +321,44 @@ func (X *CompilationEngine) CompileStatements() {
 			fmt.Println("something unexpected happened in the Compile statements function")
 		}
 	}
-	helpWrite(X.file, "</statements>\n")
+	helpWrite(X.xmlFile, "</statements>\n")
 }
 
 // Compiles a do statement.
 // 'do' subroutineCall ';'
 func (X *CompilationEngine) CompileDo() {
-	helpWrite(X.file, "<doStatement>\n")
+	helpWrite(X.xmlFile, "<doStatement>\n")
 	//do
-	helpWrite(X.file, X.tokenizer.FormatTokenString())
+	helpWrite(X.xmlFile, X.tokenizer.FormatTokenString())
 	X.tokenizer.Advance()
 
 	X.CompileSubroutineCall()
 	//symbol ;
-	helpWrite(X.file, X.tokenizer.FormatTokenString())
+	helpWrite(X.xmlFile, X.tokenizer.FormatTokenString())
 	X.tokenizer.Advance()
-	helpWrite(X.file, "</doStatement>\n")
+	helpWrite(X.xmlFile, "</doStatement>\n")
+}
+
+func convert_variable_kind(kind string) string {
+	switch kind {
+	case "static":
+		return "STATIC"
+	case "field":
+		return "THIS"
+	case "ARG":
+		return "ARG"
+	case "VAR":
+		return "LOCAL"
+	default:
+		return "ERROR"
+	}
 }
 
 // Compiles a let statement.
 func (X *CompilationEngine) CompileLet() {
-	helpWrite(X.file, "<letStatement>\n")
+	helpWrite(X.xmlFile, "<letStatement>\n")
 	//let
-	helpWrite(X.file, X.tokenizer.FormatTokenString())
+	helpWrite(X.xmlFile, X.tokenizer.FormatTokenString())
 	X.tokenizer.Advance()
 
 	//varName
@@ -348,123 +366,283 @@ func (X *CompilationEngine) CompileLet() {
 	kind := X.symbolTable.KindOf(X.tokenizer.Token)
 	num := X.symbolTable.IndexOf(X.tokenizer.Token)
 
-	helpWrite(X.file, X.symbolTable.IdentifierToXML(X.tokenizer.Token, false))
+	helpWrite(X.xmlFile, X.symbolTable.IdentifierToXML(X.tokenizer.Token, false))
 	X.tokenizer.Advance()
 
 	// [expression]?
 	if X.tokenizer.Symbol() == "[" { //TODO: handle array
 		//[
-		helpWrite(X.file, X.tokenizer.FormatTokenString())
+		helpWrite(X.xmlFile, X.tokenizer.FormatTokenString())
 		X.tokenizer.Advance()
 		X.CompileExpression()
 		//]
-		helpWrite(X.file, X.tokenizer.FormatTokenString())
+		helpWrite(X.xmlFile, X.tokenizer.FormatTokenString())
 		X.tokenizer.Advance()
 
 	}
 	//=
-	helpWrite(X.file, X.tokenizer.FormatTokenString())
+	helpWrite(X.xmlFile, X.tokenizer.FormatTokenString())
 	X.tokenizer.Advance()
 	X.CompileExpression()
-	X.vmwriter.WritePop(kind, num) //save the value to the let
+	kind_type := convert_variable_kind(kind)
+	X.vmwriter.WritePop(kind_type, num) //save the value to the let
 	//symbol ;
-	helpWrite(X.file, X.tokenizer.FormatTokenString())
+	helpWrite(X.xmlFile, X.tokenizer.FormatTokenString())
 	X.tokenizer.Advance()
-	helpWrite(X.file, "</letStatement>\n")
+	helpWrite(X.xmlFile, "</letStatement>\n")
 }
 
 // Compiles a while statement.
 func (X *CompilationEngine) CompileWhile() {
-	helpWrite(X.file, "<whileStatement>\n")
+	helpWrite(X.xmlFile, "<whileStatement>\n")
 	//while
-	helpWrite(X.file, X.tokenizer.FormatTokenString())
+	helpWrite(X.xmlFile, X.tokenizer.FormatTokenString())
 	X.tokenizer.Advance()
 
-	begin_loop_label := "LOOP" + strconv.Itoa(X.loopCounter)
+	begin_loop_label := "LOOP" + strconv.Itoa(X.labelCounter)
 	X.vmwriter.WriteLabel(begin_loop_label)
 
 	//symbol (
-	helpWrite(X.file, X.tokenizer.FormatTokenString())
+	helpWrite(X.xmlFile, X.tokenizer.FormatTokenString())
 	X.tokenizer.Advance()
 	X.CompileExpression()
 	//symbol )
-	helpWrite(X.file, X.tokenizer.FormatTokenString())
+	helpWrite(X.xmlFile, X.tokenizer.FormatTokenString())
 
-	end_label_loop := "END" + strconv.Itoa(X.loopCounter)
+	end_label_loop := "END" + strconv.Itoa(X.labelCounter)
 	X.vmwriter.WriteIf(end_label_loop)
 
 	X.tokenizer.Advance()
 	//symbol {
-	helpWrite(X.file, X.tokenizer.FormatTokenString())
+	helpWrite(X.xmlFile, X.tokenizer.FormatTokenString())
 	X.tokenizer.Advance()
 	X.CompileStatements()
 
 	X.vmwriter.WriteGoto(begin_loop_label)
 	// }
-	helpWrite(X.file, X.tokenizer.FormatTokenString())
+	helpWrite(X.xmlFile, X.tokenizer.FormatTokenString())
 	X.tokenizer.Advance()
 
-	helpWrite(X.file, "</whileStatement>\n")
+	helpWrite(X.xmlFile, "</whileStatement>\n")
 
 	X.vmwriter.WriteLabel(end_label_loop)
+
+	X.labelCounter++ //increment the loop counter
 }
 
 // Compiles a return statement.
 func (X *CompilationEngine) CompileReturn() {
-	helpWrite(X.file, "<returnStatement>\n")
+	helpWrite(X.xmlFile, "<returnStatement>\n")
 	//return
-	helpWrite(X.file, X.tokenizer.FormatTokenString())
+	helpWrite(X.xmlFile, X.tokenizer.FormatTokenString())
 	X.tokenizer.Advance()
 	if X.tokenizer.Symbol() != ";" {
 		X.CompileExpression()
 	}
 	//symbol ;
-	helpWrite(X.file, X.tokenizer.FormatTokenString())
+	helpWrite(X.xmlFile, X.tokenizer.FormatTokenString())
 	X.tokenizer.Advance()
 	X.vmwriter.WriteReturn()
-	helpWrite(X.file, "</returnStatement>\n")
+	helpWrite(X.xmlFile, "</returnStatement>\n")
 }
 
 // Compiles an if statement, possibly with a trailing else clause.
 // Grammar: ifStatement: 'if' '(' expression ')' '{' statements '}'
 // ('else' '{' statements '}')?
 func (X *CompilationEngine) CompileIf() {
-	helpWrite(X.file, "<ifStatement>\n")
+	helpWrite(X.xmlFile, "<ifStatement>\n")
 	//if
-	helpWrite(X.file, X.tokenizer.FormatTokenString())
+	helpWrite(X.xmlFile, X.tokenizer.FormatTokenString())
 	X.tokenizer.Advance()
 	//symbol '('
-	helpWrite(X.file, X.tokenizer.FormatTokenString())
+	helpWrite(X.xmlFile, X.tokenizer.FormatTokenString())
 	X.tokenizer.Advance()
 	X.CompileExpression()
-	X.vmwriter.WriteIf("ELSE")
+	else_label := "ELSE" + strconv.Itoa(X.labelCounter)
+	X.vmwriter.WriteIf(else_label)
 	//symbol ')'
-	helpWrite(X.file, X.tokenizer.FormatTokenString())
+	helpWrite(X.xmlFile, X.tokenizer.FormatTokenString())
 
 	X.tokenizer.Advance()
 	//symbol '{'
-	helpWrite(X.file, X.tokenizer.FormatTokenString())
+	helpWrite(X.xmlFile, X.tokenizer.FormatTokenString())
 	X.tokenizer.Advance()
 	X.CompileStatements()
-	X.vmwriter.WriteGoto("END")
+	end_label := "END" + strconv.Itoa(X.labelCounter)
+	X.vmwriter.WriteGoto(end_label)
 	//symbol '}'
-	helpWrite(X.file, X.tokenizer.FormatTokenString())
-	X.vmwriter.WriteLabel("ELSE")
+	helpWrite(X.xmlFile, X.tokenizer.FormatTokenString())
+	X.vmwriter.WriteLabel(else_label)
 	X.tokenizer.Advance()
 	if X.tokenizer.KeyWord() == "else" {
 		//else
-		helpWrite(X.file, X.tokenizer.FormatTokenString())
+		helpWrite(X.xmlFile, X.tokenizer.FormatTokenString())
 		X.tokenizer.Advance()
 		//symbol '{'
-		helpWrite(X.file, X.tokenizer.FormatTokenString())
+		helpWrite(X.xmlFile, X.tokenizer.FormatTokenString())
 		X.tokenizer.Advance()
 		X.CompileStatements()
 		//symbol '}'
-		helpWrite(X.file, X.tokenizer.FormatTokenString())
+		helpWrite(X.xmlFile, X.tokenizer.FormatTokenString())
 		X.tokenizer.Advance()
 	}
-	helpWrite(X.file, "</ifStatement>\n")
-	X.vmwriter.WriteLabel("END")
+	helpWrite(X.xmlFile, "</ifStatement>\n")
+	X.vmwriter.WriteLabel(end_label)
+
+	X.labelCounter++ //increment the loop counter
+}
+
+// Compiles an expression
+// Grammar: expression: term (op term)*
+func (X *CompilationEngine) CompileExpression() {
+	helpWrite(X.xmlFile, "<expression>\n")
+
+	X.CompileTerm()
+	if X.tokenizer.TokenType() == "SYMBOL" {
+		var token string = X.tokenizer.Symbol()
+		for token == "+" || token == "-" || token == "*" || token == "/" || token == "&" || token == "|" || token == "<" || token == ">" || token == "=" {
+			helpWrite(X.xmlFile, X.tokenizer.FormatTokenString()) // write: op
+			X.tokenizer.Advance()
+			X.CompileTerm()
+			token_type := convert_binary_token(token)
+			X.vmwriter.WriteArithmetic(token_type) //do the arithmetic todo: what does it mean to do + before * is there precendence
+			token = X.tokenizer.Symbol()
+		}
+	}
+
+	helpWrite(X.xmlFile, "</expression>\n")
+}
+
+// Compiles a subroutine call, not a seperate function, doesn't have its own tags
+// Grammar: subroutineCall: subroutineName '(' expressionList ')' | (className |
+// varName) '.' subroutineName '(' expressionList ')'
+func (X *CompilationEngine) CompileSubroutineCall() {
+
+	if X.symbolTable.KindOf(X.tokenizer.Token) == "NONE" {
+		helpWrite(X.xmlFile, X.tokenizer.FormatTokenString()) // write: subroutineName or className
+		//nameOfFunc := X.tokenizer.Token
+	} else {
+		helpWrite(X.xmlFile, X.symbolTable.IdentifierToXML(X.tokenizer.Token, false)) // write: varName
+	}
+	beforeDot := X.tokenizer.Token
+	X.tokenizer.Advance()
+	if X.tokenizer.Token == "(" {
+		helpWrite(X.xmlFile, X.tokenizer.FormatTokenString()) // write: '('
+		X.tokenizer.Advance()
+		i := X.CompileExpressionList()
+		X.vmwriter.WriteCall(beforeDot, i)
+	} else {
+		helpWrite(X.xmlFile, X.tokenizer.FormatTokenString()) // write: '.'
+		X.tokenizer.Advance()
+		helpWrite(X.xmlFile, X.tokenizer.FormatTokenString()) // write: subroutineName
+		nameOfFunc := X.tokenizer.Token                       //todo: now how do we know how many arguments
+		X.tokenizer.Advance()
+		helpWrite(X.xmlFile, X.tokenizer.FormatTokenString()) // write: '('
+		X.tokenizer.Advance()
+		i := X.CompileExpressionList() // write: expressionList
+		X.vmwriter.WriteCall(beforeDot+"."+nameOfFunc, i)
+	}
+	helpWrite(X.xmlFile, X.tokenizer.FormatTokenString()) // write: ')'
+	X.tokenizer.Advance()
+}
+
+// Compiles a term. This routine is faced with a slight difficulty
+// when trying to decide between some of the alternative parsing
+// rules. Specifically, if the current token is an identifier, the
+// routine must distinguish between a variable, an array entry, and a
+// subroutine call. A single look ahead token, which may be one
+// of ‘‘[’’, ‘‘(’’, or ‘‘.’’ suffices to distinguish between the three
+// possibilities. Any other token is not part of this term and
+// should not be advanced over. Follows grammar:
+// integerConstant | stringConstant | keywordConstant | varName | varName '[' expression ']'
+// | subroutineCall | '(' expression ')' | unaryOp term
+func (X *CompilationEngine) CompileTerm() {
+	helpWrite(X.xmlFile, "<term>\n")
+
+	var firstType string = X.tokenizer.TokenType()
+
+	if firstType == "INT_CONST" || firstType == "STRING_CONST" || firstType == "KEYWORD" {
+		if firstType == "INT_CONST" {
+			i, _ := strconv.Atoi(X.tokenizer.Token)
+			X.vmwriter.WritePush("CONST", i)
+		}
+		helpWrite(X.xmlFile, X.tokenizer.FormatTokenString()) // write the constant or keyword
+		X.tokenizer.Advance()
+
+	} else if firstType == "IDENTIFIER" { // varName | varName '[' expression ']' | subroutineCall
+		var lookahead Tokenizer.Tokenizer = X.tokenizer
+		lookahead.Advance()
+
+		if lookahead.Token == "[" { // varName '[' expression ']'
+			// helpWrite(X.file, X.tokenizer.FormatTokenString()) // write the varName
+			helpWrite(X.xmlFile, X.symbolTable.IdentifierToXML(X.tokenizer.Token, false))
+			//varname := X.tokenizer.Token //address 0 of the array we need to add to that
+			//addzero := X.symbolTable.IndexOf(varname)
+			//argument := X.symbolTable.TypeOf(varname) //the rest of the array has to be addressed
+			X.tokenizer.Advance()
+
+			helpWrite(X.xmlFile, X.tokenizer.FormatTokenString()) // write the '['
+			X.tokenizer.Advance()
+			X.CompileExpression()
+			helpWrite(X.xmlFile, X.tokenizer.FormatTokenString()) // write the ']'
+			X.tokenizer.Advance()
+
+		} else if lookahead.Token == "(" || lookahead.Token == "." { // subroutineCall
+			X.CompileSubroutineCall()
+
+		} else { // just varName
+			// helpWrite(X.file, X.tokenizer.FormatTokenString()) // write the varName
+			helpWrite(X.xmlFile, X.symbolTable.IdentifierToXML(X.tokenizer.Token, false))
+			varname := X.tokenizer.Token
+			X.vmwriter.WritePush(convert_variable_kind(X.symbolTable.KindOf(varname)), X.symbolTable.IndexOf(varname)) //push variable
+			X.tokenizer.Advance()
+		}
+
+	} else if firstType == "SYMBOL" { // '(' expression ')' | unaryOp term
+		if X.tokenizer.Token == "(" { // '(' expression ')'
+			helpWrite(X.xmlFile, X.tokenizer.FormatTokenString()) // write the '('
+			X.tokenizer.Advance()
+			X.CompileExpression()
+			helpWrite(X.xmlFile, X.tokenizer.FormatTokenString()) // write the ')'
+			X.tokenizer.Advance()
+
+		} else { // unaryOp term
+			helpWrite(X.xmlFile, X.tokenizer.FormatTokenString()) // write the unaryOp
+			unary := X.tokenizer.Token
+			unary_type := convert_unary_token(unary)
+			X.tokenizer.Advance()
+			X.CompileTerm()
+			X.vmwriter.WriteArithmetic(unary_type)
+		}
+	}
+
+	helpWrite(X.xmlFile, "</term>\n")
+}
+
+// Compiles a (possibly empty) comma-separated list of expressions.
+// Follows grammar: (expression (',' expression)* )?
+func (X *CompilationEngine) CompileExpressionList() int {
+	// As expressionLists always have a ')' after, check if it does, if so the expression list is empty
+	if X.tokenizer.Symbol() == ")" {
+		helpWrite(X.xmlFile, "<expressionList> </expressionList>\n")
+		// no need to advacnce, the ') is part of the caller of expressionList
+		return 0
+	}
+	helpWrite(X.xmlFile, "<expressionList>\n")
+	i := 1
+	// expression
+	X.CompileExpression()
+
+	//(',' expression)*
+	for X.tokenizer.Symbol() == "," {
+		i++
+		helpWrite(X.xmlFile, X.tokenizer.FormatTokenString()) // write the comma
+		X.tokenizer.Advance()
+		X.CompileExpression()
+	}
+
+	helpWrite(X.xmlFile, "</expressionList>\n")
+	return i
 }
 
 func convert_binary_token(token string) string {
@@ -499,157 +677,4 @@ func convert_unary_token(token string) string {
 	default:
 		return "ERROR"
 	}
-}
-
-// Compiles an expression
-// Grammar: expression: term (op term)*
-func (X *CompilationEngine) CompileExpression() {
-	helpWrite(X.file, "<expression>\n")
-
-	X.CompileTerm()
-	if X.tokenizer.TokenType() == "SYMBOL" {
-		var token string = X.tokenizer.Symbol()
-		for token == "+" || token == "-" || token == "*" || token == "/" || token == "&" || token == "|" || token == "<" || token == ">" || token == "=" {
-			helpWrite(X.file, X.tokenizer.FormatTokenString()) // write: op
-			X.tokenizer.Advance()
-			X.CompileTerm()
-			token_type := convert_binary_token(token)
-			X.vmwriter.WriteArithmetic(token_type) //do the arithmetic todo: what does it mean to do + before * is there precendence
-			token = X.tokenizer.Symbol()
-		}
-	}
-
-	helpWrite(X.file, "</expression>\n")
-}
-
-// Compiles a subroutine call, not a seperate function, doesn't have its own tags
-// Grammar: subroutineCall: subroutineName '(' expressionList ')' | (className |
-// varName) '.' subroutineName '(' expressionList ')'
-func (X *CompilationEngine) CompileSubroutineCall() {
-
-	if X.symbolTable.KindOf(X.tokenizer.Token) == "NONE" {
-		helpWrite(X.file, X.tokenizer.FormatTokenString()) // write: subroutineName or className
-		//nameOfFunc := X.tokenizer.Token
-	} else {
-		helpWrite(X.file, X.symbolTable.IdentifierToXML(X.tokenizer.Token, false)) // write: varName
-	}
-	beforeDot := X.tokenizer.Token
-	X.tokenizer.Advance()
-	if X.tokenizer.Token == "(" {
-		helpWrite(X.file, X.tokenizer.FormatTokenString()) // write: '('
-		X.tokenizer.Advance()
-		i := X.CompileExpressionList()
-		X.vmwriter.WriteCall(beforeDot, i)
-	} else {
-		helpWrite(X.file, X.tokenizer.FormatTokenString()) // write: '.'
-		X.tokenizer.Advance()
-		helpWrite(X.file, X.tokenizer.FormatTokenString()) // write: subroutineName
-		nameOfFunc := X.tokenizer.Token                    //todo: now how do we know how many arguments
-		X.tokenizer.Advance()
-		helpWrite(X.file, X.tokenizer.FormatTokenString()) // write: '('
-		X.tokenizer.Advance()
-		i := X.CompileExpressionList() // write: expressionList
-		X.vmwriter.WriteCall(beforeDot+"."+nameOfFunc, i)
-	}
-	helpWrite(X.file, X.tokenizer.FormatTokenString()) // write: ')'
-	X.tokenizer.Advance()
-}
-
-// Compiles a term. This routine is faced with a slight difficulty
-// when trying to decide between some of the alternative parsing
-// rules. Specifically, if the current token is an identifier, the
-// routine must distinguish between a variable, an array entry, and a
-// subroutine call. A single look ahead token, which may be one
-// of ‘‘[’’, ‘‘(’’, or ‘‘.’’ suffices to distinguish between the three
-// possibilities. Any other token is not part of this term and
-// should not be advanced over. Follows grammar:
-// integerConstant | stringConstant | keywordConstant | varName | varName '[' expression ']'
-// | subroutineCall | '(' expression ')' | unaryOp term
-func (X *CompilationEngine) CompileTerm() {
-	helpWrite(X.file, "<term>\n")
-
-	var firstType string = X.tokenizer.TokenType()
-
-	if firstType == "INT_CONST" || firstType == "STRING_CONST" || firstType == "KEYWORD" {
-		if firstType == "INT_CONST" {
-			i, _ := strconv.Atoi(X.tokenizer.Token)
-			X.vmwriter.WritePush("CONST", i)
-		}
-		helpWrite(X.file, X.tokenizer.FormatTokenString()) // write the constant or keyword
-		X.tokenizer.Advance()
-
-	} else if firstType == "IDENTIFIER" { // varName | varName '[' expression ']' | subroutineCall
-		var lookahead Tokenizer.Tokenizer = X.tokenizer
-		lookahead.Advance()
-
-		if lookahead.Token == "[" { // varName '[' expression ']'
-			// helpWrite(X.file, X.tokenizer.FormatTokenString()) // write the varName
-			helpWrite(X.file, X.symbolTable.IdentifierToXML(X.tokenizer.Token, false))
-			//varname := X.tokenizer.Token //address 0 of the array we need to add to that
-			//addzero := X.symbolTable.IndexOf(varname)
-			//argument := X.symbolTable.TypeOf(varname) //the rest of the array has to be addressed
-			X.tokenizer.Advance()
-
-			helpWrite(X.file, X.tokenizer.FormatTokenString()) // write the '['
-			X.tokenizer.Advance()
-			X.CompileExpression()
-			helpWrite(X.file, X.tokenizer.FormatTokenString()) // write the ']'
-			X.tokenizer.Advance()
-
-		} else if lookahead.Token == "(" || lookahead.Token == "." { // subroutineCall
-			X.CompileSubroutineCall()
-
-		} else { // just varName
-			// helpWrite(X.file, X.tokenizer.FormatTokenString()) // write the varName
-			helpWrite(X.file, X.symbolTable.IdentifierToXML(X.tokenizer.Token, false))
-			varname := X.tokenizer.Token
-			X.vmwriter.WritePush(X.symbolTable.KindOf(varname), X.symbolTable.IndexOf(varname)) //push variable
-			X.tokenizer.Advance()
-		}
-
-	} else if firstType == "SYMBOL" { // '(' expression ')' | unaryOp term
-		if X.tokenizer.Token == "(" { // '(' expression ')'
-			helpWrite(X.file, X.tokenizer.FormatTokenString()) // write the '('
-			X.tokenizer.Advance()
-			X.CompileExpression()
-			helpWrite(X.file, X.tokenizer.FormatTokenString()) // write the ')'
-			X.tokenizer.Advance()
-
-		} else { // unaryOp term
-			helpWrite(X.file, X.tokenizer.FormatTokenString()) // write the unaryOp
-			unary := X.tokenizer.Token
-			unary_type := convert_unary_token(unary)
-			X.tokenizer.Advance()
-			X.CompileTerm()
-			X.vmwriter.WriteArithmetic(unary_type)
-		}
-	}
-
-	helpWrite(X.file, "</term>\n")
-}
-
-// Compiles a (possibly empty) comma-separated list of expressions.
-// Follows grammar: (expression (',' expression)* )?
-func (X *CompilationEngine) CompileExpressionList() int {
-	// As expressionLists always have a ')' after, check if it does, if so the expression list is empty
-	if X.tokenizer.Symbol() == ")" {
-		helpWrite(X.file, "<expressionList> </expressionList>\n")
-		// no need to advacnce, the ') is part of the caller of expressionList
-		return 0
-	}
-	helpWrite(X.file, "<expressionList>\n")
-	i := 1
-	// expression
-	X.CompileExpression()
-
-	//(',' expression)*
-	for X.tokenizer.Symbol() == "," {
-		i++
-		helpWrite(X.file, X.tokenizer.FormatTokenString()) // write the comma
-		X.tokenizer.Advance()
-		X.CompileExpression()
-	}
-
-	helpWrite(X.file, "</expressionList>\n")
-	return i
 }
