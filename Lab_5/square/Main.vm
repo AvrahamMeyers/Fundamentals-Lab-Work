@@ -3,3 +3,19 @@ call SquareGame.new 0
 call game.run 0
 call game.dispose 0
 return
+function Main.main 0
+push constant 1
+push constant 2
+push constant 3
+Call Math.multiply 2
+add
+call Output.printInt 1
+return
+function Main.main 0
+push constant 1
+push constant 2
+push constant 3
+Call Math.multiply 2
+add
+call Output.printInt 1
+return

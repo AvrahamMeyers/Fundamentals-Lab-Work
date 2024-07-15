@@ -14,7 +14,7 @@ import (
 // remember the file needs to be open for append
 func helpWrite(file *os.File, text string) {
 
-	fmt.Println(text)
+	//fmt.Println(text)
 	_, err := (*file).WriteString(text)
 	if err != nil {
 		fmt.Println("Error writing to file:", err)
@@ -38,7 +38,7 @@ type CompilationEngine struct {
 func (X *CompilationEngine) Constructor(fileName string, folderpath string) {
 	X.tokenizer.Constructor(fileName+".jack", folderpath)
 
-	X.vmwriter.Constructor(fileName, "null for now")
+	X.vmwriter.Constructor(fileName, folderpath)
 	X.filename = fileName
 
 	X.loopCounter = 0
@@ -62,7 +62,7 @@ func (X *CompilationEngine) Constructor(fileName string, folderpath string) {
 	X.file = file
 
 	X.tokenizer.Advance()
-	fmt.Println(X.tokenizer.HasMoreTokens())
+	//fmt.Println(X.tokenizer.HasMoreTokens())
 	//A jack program will always begin with the word class
 	X.CompileClass()
 
@@ -467,6 +467,40 @@ func (X *CompilationEngine) CompileIf() {
 	X.vmwriter.WriteLabel("END")
 }
 
+func convert_binary_token(token string) string {
+	switch token {
+	case "+":
+		return "ADD"
+	case "-":
+		return "SUB"
+	case ">":
+		return "GT"
+	case "<":
+		return "LT"
+	case "=":
+		return "EQ"
+	case "&":
+		return "AND"
+	case "|":
+		return "OR"
+	case "*":
+		return "MUL"
+	default:
+		return "ERROR"
+	}
+}
+
+func convert_unary_token(token string) string {
+	switch token {
+	case "-":
+		return "NEG"
+	case "~":
+		return "NOT"
+	default:
+		return "ERROR"
+	}
+}
+
 // Compiles an expression
 // Grammar: expression: term (op term)*
 func (X *CompilationEngine) CompileExpression() {
@@ -475,11 +509,12 @@ func (X *CompilationEngine) CompileExpression() {
 	X.CompileTerm()
 	if X.tokenizer.TokenType() == "SYMBOL" {
 		var token string = X.tokenizer.Symbol()
-		for token == "+" || token == "-" || token == "*" || token == "/" || token == "&amp;" || token == "|" || token == "&lt;" || token == "&gt;" || token == "=" {
+		for token == "+" || token == "-" || token == "*" || token == "/" || token == "&" || token == "|" || token == "<" || token == ">" || token == "=" {
 			helpWrite(X.file, X.tokenizer.FormatTokenString()) // write: op
 			X.tokenizer.Advance()
 			X.CompileTerm()
-			X.vmwriter.WriteArithmetic(token) //do the arithmetic todo: what does it mean to do + before * is there precendence
+			token_type := convert_binary_token(token)
+			X.vmwriter.WriteArithmetic(token_type) //do the arithmetic todo: what does it mean to do + before * is there precendence
 			token = X.tokenizer.Symbol()
 		}
 	}
@@ -583,9 +618,10 @@ func (X *CompilationEngine) CompileTerm() {
 		} else { // unaryOp term
 			helpWrite(X.file, X.tokenizer.FormatTokenString()) // write the unaryOp
 			unary := X.tokenizer.Token
+			unary_type := convert_unary_token(unary)
 			X.tokenizer.Advance()
 			X.CompileTerm()
-			X.vmwriter.WriteArithmetic(unary)
+			X.vmwriter.WriteArithmetic(unary_type)
 		}
 	}
 

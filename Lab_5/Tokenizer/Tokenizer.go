@@ -133,7 +133,7 @@ func (X Tokenizer) KeyWord() string {
 // current token. Should be called only
 // when tokenType() is SYMBOL.
 func (X *Tokenizer) Symbol() string {
-	return convertSymbolForXML(X.Token)
+	return X.Token
 }
 
 // Returns the identifier which is the

@@ -10,7 +10,8 @@ type VMWriter struct {
 }
 
 func (X *VMWriter) Constructor(fileName string, folderpath string) {
-	file, err := os.OpenFile("square/"+fileName+".vm", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	filePath := folderpath + "/" + fileName + ".vm"
+	file, err := os.OpenFile(filePath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
 		fmt.Println("Error creating file in VM writer constructor")
 		return
@@ -82,16 +83,16 @@ func (X *VMWriter) WritePop(segment string, index int) {
 Writes a VM arithmetic
 command.
 
-command (ADD,
+command (ADD, MUL,
 SUB, NEG, EQ, GT,
 LT, AND, OR, NOT)
 */
-func (X *VMWriter) WriteArithmetic(command string) { //todo: change to + - * and everything to match the token stream
-	if command == "+" {
+func (X *VMWriter) WriteArithmetic(command string) {
+	if command == "ADD" {
 		X.file.WriteString("add\n")
-	} else if command == "*" {
+	} else if command == "MUL" {
 		X.file.WriteString("Call Math.multiply 2\n")
-	} else if command == "-" {
+	} else if command == "SUB" {
 		X.file.WriteString("sub\n")
 	} else if command == "NEG" {
 		X.file.WriteString("neg\n")
