@@ -176,6 +176,7 @@ func (X *CompilationEngine) CompileSubroutine() {
 
 	//call parameter list
 	i := X.CompileParameterList()
+	//declare the function label
 	X.vmwriter.WriteFunction(label, i)
 	//assumes next token is correct <symbol ')'
 	helpWrite(X.file, X.tokenizer.FormatTokenString())
@@ -477,12 +478,13 @@ func (X *CompilationEngine) CompileSubroutineCall() {
 	} else {
 		helpWrite(X.file, X.symbolTable.IdentifierToXML(X.tokenizer.Token, false)) // write: varName
 	}
-
+	beforeDot := X.tokenizer.Token
 	X.tokenizer.Advance()
 	if X.tokenizer.Token == "(" {
 		helpWrite(X.file, X.tokenizer.FormatTokenString()) // write: '('
 		X.tokenizer.Advance()
-		X.CompileExpressionList()
+		i := X.CompileExpressionList()
+		X.vmwriter.WriteCall(beforeDot, i)
 	} else {
 		helpWrite(X.file, X.tokenizer.FormatTokenString()) // write: '.'
 		X.tokenizer.Advance()
@@ -492,7 +494,7 @@ func (X *CompilationEngine) CompileSubroutineCall() {
 		helpWrite(X.file, X.tokenizer.FormatTokenString()) // write: '('
 		X.tokenizer.Advance()
 		i := X.CompileExpressionList() // write: expressionList
-		X.vmwriter.WriteCall(nameOfFunc, i)
+		X.vmwriter.WriteCall(beforeDot+"."+nameOfFunc, i)
 	}
 	helpWrite(X.file, X.tokenizer.FormatTokenString()) // write: ')'
 	X.tokenizer.Advance()
