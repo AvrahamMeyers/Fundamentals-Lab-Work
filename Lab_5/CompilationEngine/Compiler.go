@@ -31,12 +31,14 @@ type CompilationEngine struct {
 	symbolTable SymbolTable.SymbolTable
 	file        *os.File
 	vmwriter    VMWriter.VMWriter
+	filename    string
 }
 
 func (X *CompilationEngine) Constructor(fileName string, folderpath string) {
 	X.tokenizer.Constructor(fileName+".jack", folderpath)
 
 	X.vmwriter.Constructor(fileName, "null for now")
+	X.filename = fileName
 	// outputFile, err := os.Create(fileName + "T.xml")
 	// if err != nil {
 	// 	fmt.Println("Error creating file:", err)
@@ -165,6 +167,7 @@ func (X *CompilationEngine) CompileSubroutine() {
 
 	//assumes next token is correct subroutine name <identifier>
 	helpWrite(X.file, X.tokenizer.FormatTokenString())
+	label := X.filename + "." + X.tokenizer.Token
 	X.tokenizer.Advance()
 
 	//assumes next token is correct <symbol>'('
@@ -172,7 +175,8 @@ func (X *CompilationEngine) CompileSubroutine() {
 	X.tokenizer.Advance()
 
 	//call parameter list
-	X.CompileParameterList()
+	i := X.CompileParameterList()
+	X.vmwriter.WriteFunction(label, i)
 	//assumes next token is correct <symbol ')'
 	helpWrite(X.file, X.tokenizer.FormatTokenString())
 	X.tokenizer.Advance()
@@ -202,13 +206,13 @@ func (X *CompilationEngine) CompileSubroutine() {
 
 // Compiles a (possibly empty) parameter list, not including the enclosing ‘‘()’’.
 // Grammar: parameterList: ((type varName) (',' type varName)*)?
-func (X *CompilationEngine) CompileParameterList() {
+func (X *CompilationEngine) CompileParameterList() int {
 
 	// As expressionLists always have a ')' after, check if it does, if so the expression list is empty
 	if X.tokenizer.Symbol() == ")" {
 		helpWrite(X.file, "<parameterList> </parameterList>\n")
 		// no need to advacnce, the ') is part of the caller of parameterList
-		return
+		return 0
 	}
 
 	helpWrite(X.file, "<parameterList>\n") //start param list
@@ -216,13 +220,14 @@ func (X *CompilationEngine) CompileParameterList() {
 	helpWrite(X.file, X.tokenizer.FormatTokenString()) // write the type
 	var itsType string = X.tokenizer.Token
 	X.tokenizer.Advance()
-
+	i := 1
 	// helpWrite(X.file, X.tokenizer.FormatTokenString()) // write the varName
 	X.symbolTable.Define(X.tokenizer.Token, itsType, "ARG")
 	helpWrite(X.file, X.symbolTable.IdentifierToXML(X.tokenizer.Token, true))
 	X.tokenizer.Advance()
 
 	for X.tokenizer.Symbol() == "," {
+		i += 1
 		helpWrite(X.file, X.tokenizer.FormatTokenString()) // write the comma
 		X.tokenizer.Advance()
 
@@ -237,6 +242,7 @@ func (X *CompilationEngine) CompileParameterList() {
 	}
 
 	helpWrite(X.file, "</parameterList>\n")
+	return i
 }
 
 // Compiles a var declaration.
