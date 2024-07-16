@@ -431,6 +431,7 @@ func (X *CompilationEngine) CompileWhile() {
 	helpWrite(X.xmlFile, X.tokenizer.FormatTokenString())
 
 	end_label_loop := "END" + strconv.Itoa(ThisScope)
+	X.vmwriter.WriteArithmetic("NOT")
 	X.vmwriter.WriteIf(end_label_loop)
 
 	X.tokenizer.Advance()
@@ -482,6 +483,7 @@ func (X *CompilationEngine) CompileIf() {
 	X.tokenizer.Advance()
 	X.CompileExpression()
 	else_label := "ELSE" + strconv.Itoa(ThisScope)
+	X.vmwriter.WriteArithmetic("NOT")
 	X.vmwriter.WriteIf(else_label)
 	//symbol ')'
 	helpWrite(X.xmlFile, X.tokenizer.FormatTokenString())
