@@ -159,6 +159,9 @@ func (X *CompilationEngine) CompileClassVarDec() {
 // function, or constructor.
 // Grammar: ('constructor'|'function'|'method') ('void'|type)subroutineName'('parameterList')' subroutineBody
 func (X *CompilationEngine) CompileSubroutine() {
+
+	subroutineType := X.tokenizer.KeyWord()
+
 	helpWrite(X.xmlFile, "<subroutineDec>\n")
 
 	helpWrite(X.xmlFile, X.tokenizer.FormatTokenString())
@@ -167,10 +170,12 @@ func (X *CompilationEngine) CompileSubroutine() {
 	//assumes next token is correct keyword void or type <keyword>
 	helpWrite(X.xmlFile, X.tokenizer.FormatTokenString())
 	X.tokenizer.Advance()
-
+	label := ""
 	//assumes next token is correct subroutine name <identifier>
 	helpWrite(X.xmlFile, X.tokenizer.FormatTokenString())
-	label := X.filename + "." + X.tokenizer.Token
+
+	label = X.filename + "." + X.tokenizer.Token
+
 	X.tokenizer.Advance()
 
 	//assumes next token is correct <symbol>'('
@@ -194,6 +199,16 @@ func (X *CompilationEngine) CompileSubroutine() {
 	//var declerations
 	X.CompileVarDec()
 	X.vmwriter.WriteFunction(label, X.symbolTable.VarCount("VAR"))
+
+	if subroutineType == "constructor" {
+		filedsCount := X.symbolTable.VarCount("field")
+		X.vmwriter.WriteMemAlloc(filedsCount)
+		X.vmwriter.WritePop("POINTER", 0)
+	} else if subroutineType == "method" {
+		X.vmwriter.WritePush("ARG", 0)
+		X.vmwriter.WritePop("POINTER", 0)
+	}
+
 	fmt.Println("VarDec done " + label)
 	fmt.Println(X.symbolTable.VarCount("VAR"))
 	//statements
@@ -378,8 +393,9 @@ func (X *CompilationEngine) CompileLet() {
 		X.CompileExpression()
 
 		X.vmwriter.WritePush(convert_variable_kind(kind), num) // push the base address
-		X.vmwriter.WriteArithmetic("add")                      // the index with the base address
 
+		X.vmwriter.WriteArithmetic("ADD") // the index with the base address
+		X.vmwriter.WritePop("POINTER", 1) //SAVE X[NUMBER] TO POINTER 1
 		//]
 		helpWrite(X.xmlFile, X.tokenizer.FormatTokenString())
 		X.tokenizer.Advance()
@@ -391,17 +407,8 @@ func (X *CompilationEngine) CompileLet() {
 	X.CompileExpression()
 
 	if isarray {
-		// Pop the result of the expression into temp 0
-		X.vmwriter.WritePop("temp", 0)
-
-		// Pop the calculated address into pointer 1 (that segment)
-		X.vmwriter.WritePop("pointer", 1)
-
-		// Push the result back onto the stack
-		X.vmwriter.WritePush("temp", 0)
-
 		// Pop the result into the array element (that 0)
-		X.vmwriter.WritePop("that", 0)
+		X.vmwriter.WritePop("THAT", 0)
 	} else {
 		X.vmwriter.WritePop(convert_variable_kind(kind), num) //save the value to the appropriate location
 	}
@@ -543,18 +550,19 @@ func (X *CompilationEngine) CompileExpression() {
 func (X *CompilationEngine) CompileSubroutineCall() {
 	i := 0 //how many argumants
 	callName := ""
-
+	callName = X.tokenizer.Token
 	if X.symbolTable.KindOf(X.tokenizer.Token) == "NONE" {
 		helpWrite(X.xmlFile, X.tokenizer.FormatTokenString()) // write: subroutineName or className
 		callName = X.tokenizer.Token
 	} else {
+		//X.symbolTable.IndexOf(callName)
 		helpWrite(X.xmlFile, X.symbolTable.IdentifierToXML(X.tokenizer.Token, false)) // write: varName
 		objectName := X.tokenizer.Token
 		kind := X.symbolTable.KindOf(objectName)
 		typeName := X.symbolTable.TypeOf(objectName)
 		index := X.symbolTable.IndexOf(objectName)
-		i = 1 // One argument for the object reference
-
+		i += 1 // One argument for the object reference
+		kind = convert_variable_kind(kind)
 		X.vmwriter.WritePush(kind, index)
 
 		callName = typeName // The type name becomes part of the call name
@@ -564,7 +572,9 @@ func (X *CompilationEngine) CompileSubroutineCall() {
 	if X.tokenizer.Token == "(" {
 		helpWrite(X.xmlFile, X.tokenizer.FormatTokenString()) // write: '('
 		X.tokenizer.Advance()
-		i = X.CompileExpressionList()
+		callName = X.filename + "." + callName
+		X.vmwriter.WritePush("POINTER", 0)
+		i += X.CompileExpressionList() + 1
 
 	} else {
 		helpWrite(X.xmlFile, X.tokenizer.FormatTokenString()) // write: '.'
@@ -574,7 +584,7 @@ func (X *CompilationEngine) CompileSubroutineCall() {
 		X.tokenizer.Advance()
 		helpWrite(X.xmlFile, X.tokenizer.FormatTokenString()) // write: '('
 		X.tokenizer.Advance()
-		i = X.CompileExpressionList() // write: expressionList
+		i += X.CompileExpressionList() // write: expressionList
 		callName = callName + "." + nameOfFunc
 	}
 	helpWrite(X.xmlFile, X.tokenizer.FormatTokenString()) // write: ')'
@@ -613,7 +623,7 @@ func (X *CompilationEngine) CompileTerm() {
 			case "false", "null":
 				X.vmwriter.WritePush("CONST", 0)
 			case "this":
-				X.vmwriter.WritePush("THIS", 0)
+				X.vmwriter.WritePush("POINTER", 0)
 
 			}
 		}
@@ -631,14 +641,19 @@ func (X *CompilationEngine) CompileTerm() {
 			varname := X.tokenizer.Token //address 0 of the array we need to add to that
 			addzero := X.symbolTable.IndexOf(varname)
 			argument := X.symbolTable.TypeOf(varname) //the rest of the array has to be addressed
-			X.vmwriter.WritePush(argument, addzero)   //push the address of the 0 pointer
+			//push the address of the 0 pointer
 			X.tokenizer.Advance()
 
 			helpWrite(X.xmlFile, X.tokenizer.FormatTokenString()) // write the '['
 			X.tokenizer.Advance()
+
 			X.CompileExpression()
 
+			X.vmwriter.WritePush(argument, addzero)
+
 			X.vmwriter.WriteArithmetic("ADD")
+			X.vmwriter.WritePop("POINTER", 1)
+			X.vmwriter.WritePush("THAT", 0)
 			/////////////////X.vmwriter.WritePop("TEMP", 0)
 			helpWrite(X.xmlFile, X.tokenizer.FormatTokenString()) // write the ']'
 			X.tokenizer.Advance()

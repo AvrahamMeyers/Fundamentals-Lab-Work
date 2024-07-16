@@ -179,6 +179,11 @@ func (X *VMWriter) WriteReturn() {
 	X.file.WriteString("return\n")
 }
 
+func (X *VMWriter) WriteMemAlloc(amount int) {
+	X.WritePush("CONST", amount)
+	X.file.WriteString("call Memory.alloc 1\n")
+}
+
 /*
 Closes the output file.
 */
