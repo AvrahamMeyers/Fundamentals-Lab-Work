@@ -79,6 +79,26 @@ func (X *VMWriter) WritePop(segment string, index int) {
 	}
 }
 
+func (X *VMWriter) WritePoparray(segment string, index int) {
+	if segment == "CONST" {
+		X.file.WriteString("pop constant " + fmt.Sprint(index) + "\n")
+	} else if segment == "ARG" {
+		X.file.WriteString("pop argument " + fmt.Sprint(index) + "\n")
+	} else if segment == "LOCAL" {
+		X.file.WriteString("pop local " + fmt.Sprint(index) + "\n")
+	} else if segment == "STATIC" {
+		X.file.WriteString("pop static " + fmt.Sprint(index) + "\n")
+	} else if segment == "THIS" {
+		X.file.WriteString("pop this " + fmt.Sprint(index) + "\n")
+	} else if segment == "THAT" {
+		X.file.WriteString("pop that " + fmt.Sprint(index) + "\n")
+	} else if segment == "POINTER" {
+		X.file.WriteString("pop pointer " + fmt.Sprint(index) + "\n")
+	} else if segment == "TEMP" {
+		X.file.WriteString("pop temp " + fmt.Sprint(index) + "\n")
+	}
+}
+
 /*
 Writes a VM arithmetic
 command.
@@ -91,7 +111,7 @@ func (X *VMWriter) WriteArithmetic(command string) {
 	if command == "ADD" {
 		X.file.WriteString("add\n")
 	} else if command == "MUL" {
-		X.file.WriteString("Call Math.multiply 2\n")
+		X.file.WriteString("call Math.multiply 2\n")
 	} else if command == "SUB" {
 		X.file.WriteString("sub\n")
 	} else if command == "NEG" {

@@ -176,7 +176,9 @@ func (X *CompilationEngine) CompileSubroutine() {
 	//assumes next token is correct <symbol>'('
 	helpWrite(X.xmlFile, X.tokenizer.FormatTokenString())
 	X.tokenizer.Advance()
-
+	//subroutine body
+	helpWrite(X.xmlFile, "<subroutineBody>\n")
+	X.symbolTable.StartSubroutine()
 	//call parameter list
 	X.CompileParameterList()
 	//declare the function label
@@ -184,10 +186,6 @@ func (X *CompilationEngine) CompileSubroutine() {
 	//assumes next token is correct symbol ')'
 	helpWrite(X.xmlFile, X.tokenizer.FormatTokenString())
 	X.tokenizer.Advance()
-
-	//subroutine body
-	helpWrite(X.xmlFile, "<subroutineBody>\n")
-	X.symbolTable.StartSubroutine()
 
 	//assumes next token is correct <symbol> '{'
 	helpWrite(X.xmlFile, X.tokenizer.FormatTokenString())
@@ -337,6 +335,7 @@ func (X *CompilationEngine) CompileDo() {
 	helpWrite(X.xmlFile, X.tokenizer.FormatTokenString())
 	X.tokenizer.Advance()
 	helpWrite(X.xmlFile, "</doStatement>\n")
+	X.vmwriter.WritePop("temp", 0)
 }
 
 func convert_variable_kind(kind string) string {
@@ -345,7 +344,7 @@ func convert_variable_kind(kind string) string {
 		return "STATIC"
 	case "field":
 		return "THIS"
-	case "ARG":
+	case "ARG", "NONE":
 		return "ARG"
 	case "VAR":
 		return "LOCAL"
@@ -369,12 +368,18 @@ func (X *CompilationEngine) CompileLet() {
 	helpWrite(X.xmlFile, X.symbolTable.IdentifierToXML(X.tokenizer.Token, false))
 	X.tokenizer.Advance()
 
+	isarray := false
 	// [expression]?
 	if X.tokenizer.Symbol() == "[" { //TODO: handle array
+		isarray = true
 		//[
 		helpWrite(X.xmlFile, X.tokenizer.FormatTokenString())
 		X.tokenizer.Advance()
 		X.CompileExpression()
+
+		X.vmwriter.WritePush(convert_variable_kind(kind), num) // push the base address
+		X.vmwriter.WriteArithmetic("add")                      // the index with the base address
+
 		//]
 		helpWrite(X.xmlFile, X.tokenizer.FormatTokenString())
 		X.tokenizer.Advance()
@@ -384,8 +389,22 @@ func (X *CompilationEngine) CompileLet() {
 	helpWrite(X.xmlFile, X.tokenizer.FormatTokenString())
 	X.tokenizer.Advance()
 	X.CompileExpression()
-	kind_type := convert_variable_kind(kind)
-	X.vmwriter.WritePop(kind_type, num) //save the value to the let
+
+	if isarray {
+		// Pop the result of the expression into temp 0
+		X.vmwriter.WritePop("temp", 0)
+
+		// Pop the calculated address into pointer 1 (that segment)
+		X.vmwriter.WritePop("pointer", 1)
+
+		// Push the result back onto the stack
+		X.vmwriter.WritePush("temp", 0)
+
+		// Pop the result into the array element (that 0)
+		X.vmwriter.WritePop("that", 0)
+	} else {
+		X.vmwriter.WritePop(convert_variable_kind(kind), num) //save the value to the appropriate location
+	}
 	//symbol ;
 	helpWrite(X.xmlFile, X.tokenizer.FormatTokenString())
 	X.tokenizer.Advance()
@@ -394,12 +413,14 @@ func (X *CompilationEngine) CompileLet() {
 
 // Compiles a while statement.
 func (X *CompilationEngine) CompileWhile() {
+	ThisScope := X.labelCounter + 1
+	X.labelCounter++
 	helpWrite(X.xmlFile, "<whileStatement>\n")
 	//while
 	helpWrite(X.xmlFile, X.tokenizer.FormatTokenString())
 	X.tokenizer.Advance()
 
-	begin_loop_label := "LOOP" + strconv.Itoa(X.labelCounter)
+	begin_loop_label := "LOOP" + strconv.Itoa(ThisScope)
 	X.vmwriter.WriteLabel(begin_loop_label)
 
 	//symbol (
@@ -409,7 +430,7 @@ func (X *CompilationEngine) CompileWhile() {
 	//symbol )
 	helpWrite(X.xmlFile, X.tokenizer.FormatTokenString())
 
-	end_label_loop := "END" + strconv.Itoa(X.labelCounter)
+	end_label_loop := "END" + strconv.Itoa(ThisScope)
 	X.vmwriter.WriteIf(end_label_loop)
 
 	X.tokenizer.Advance()
@@ -426,8 +447,6 @@ func (X *CompilationEngine) CompileWhile() {
 	helpWrite(X.xmlFile, "</whileStatement>\n")
 
 	X.vmwriter.WriteLabel(end_label_loop)
-
-	X.labelCounter++ //increment the loop counter
 }
 
 // Compiles a return statement.
@@ -438,6 +457,8 @@ func (X *CompilationEngine) CompileReturn() {
 	X.tokenizer.Advance()
 	if X.tokenizer.Symbol() != ";" {
 		X.CompileExpression()
+	} else {
+		X.vmwriter.WritePush("CONST", 0)
 	}
 	//symbol ;
 	helpWrite(X.xmlFile, X.tokenizer.FormatTokenString())
@@ -450,6 +471,8 @@ func (X *CompilationEngine) CompileReturn() {
 // Grammar: ifStatement: 'if' '(' expression ')' '{' statements '}'
 // ('else' '{' statements '}')?
 func (X *CompilationEngine) CompileIf() {
+	ThisScope := X.labelCounter + 1
+	X.labelCounter++
 	helpWrite(X.xmlFile, "<ifStatement>\n")
 	//if
 	helpWrite(X.xmlFile, X.tokenizer.FormatTokenString())
@@ -458,7 +481,7 @@ func (X *CompilationEngine) CompileIf() {
 	helpWrite(X.xmlFile, X.tokenizer.FormatTokenString())
 	X.tokenizer.Advance()
 	X.CompileExpression()
-	else_label := "ELSE" + strconv.Itoa(X.labelCounter)
+	else_label := "ELSE" + strconv.Itoa(ThisScope)
 	X.vmwriter.WriteIf(else_label)
 	//symbol ')'
 	helpWrite(X.xmlFile, X.tokenizer.FormatTokenString())
@@ -468,7 +491,7 @@ func (X *CompilationEngine) CompileIf() {
 	helpWrite(X.xmlFile, X.tokenizer.FormatTokenString())
 	X.tokenizer.Advance()
 	X.CompileStatements()
-	end_label := "END" + strconv.Itoa(X.labelCounter)
+	end_label := "END" + strconv.Itoa(ThisScope)
 	X.vmwriter.WriteGoto(end_label)
 	//symbol '}'
 	helpWrite(X.xmlFile, X.tokenizer.FormatTokenString())
@@ -489,7 +512,6 @@ func (X *CompilationEngine) CompileIf() {
 	helpWrite(X.xmlFile, "</ifStatement>\n")
 	X.vmwriter.WriteLabel(end_label)
 
-	X.labelCounter++ //increment the loop counter
 }
 
 // Compiles an expression
@@ -505,7 +527,7 @@ func (X *CompilationEngine) CompileExpression() {
 			X.tokenizer.Advance()
 			X.CompileTerm()
 			token_type := convert_binary_token(token)
-			X.vmwriter.WriteArithmetic(token_type) //do the arithmetic todo: what does it mean to do + before * is there precendence
+			X.vmwriter.WriteArithmetic(token_type)
 			token = X.tokenizer.Symbol()
 		}
 	}
@@ -517,33 +539,48 @@ func (X *CompilationEngine) CompileExpression() {
 // Grammar: subroutineCall: subroutineName '(' expressionList ')' | (className |
 // varName) '.' subroutineName '(' expressionList ')'
 func (X *CompilationEngine) CompileSubroutineCall() {
+	i := 0 //how many argumants
+	callName := ""
 
 	if X.symbolTable.KindOf(X.tokenizer.Token) == "NONE" {
 		helpWrite(X.xmlFile, X.tokenizer.FormatTokenString()) // write: subroutineName or className
-		//nameOfFunc := X.tokenizer.Token
+		callName = X.tokenizer.Token
 	} else {
 		helpWrite(X.xmlFile, X.symbolTable.IdentifierToXML(X.tokenizer.Token, false)) // write: varName
+		objectName := X.tokenizer.Token
+		kind := X.symbolTable.KindOf(objectName)
+		typeName := X.symbolTable.TypeOf(objectName)
+		index := X.symbolTable.IndexOf(objectName)
+		i = 1 // One argument for the object reference
+
+		X.vmwriter.WritePush(kind, index)
+
+		callName = typeName // The type name becomes part of the call name
 	}
-	beforeDot := X.tokenizer.Token
+	//beforeDot := X.tokenizer.Token
 	X.tokenizer.Advance()
 	if X.tokenizer.Token == "(" {
 		helpWrite(X.xmlFile, X.tokenizer.FormatTokenString()) // write: '('
 		X.tokenizer.Advance()
-		i := X.CompileExpressionList()
-		X.vmwriter.WriteCall(beforeDot, i)
+		i = X.CompileExpressionList()
+
 	} else {
 		helpWrite(X.xmlFile, X.tokenizer.FormatTokenString()) // write: '.'
 		X.tokenizer.Advance()
 		helpWrite(X.xmlFile, X.tokenizer.FormatTokenString()) // write: subroutineName
-		nameOfFunc := X.tokenizer.Token                       //todo: now how do we know how many arguments
+		nameOfFunc := X.tokenizer.Token
 		X.tokenizer.Advance()
 		helpWrite(X.xmlFile, X.tokenizer.FormatTokenString()) // write: '('
 		X.tokenizer.Advance()
-		i := X.CompileExpressionList() // write: expressionList
-		X.vmwriter.WriteCall(beforeDot+"."+nameOfFunc, i)
+		i = X.CompileExpressionList() // write: expressionList
+		callName = callName + "." + nameOfFunc
 	}
 	helpWrite(X.xmlFile, X.tokenizer.FormatTokenString()) // write: ')'
 	X.tokenizer.Advance()
+	// for j := i - 1; j >= 0; j-- {
+	// 	X.vmwriter.WritePop("ARG", j)
+	// }
+	X.vmwriter.WriteCall(callName, i)
 }
 
 // Compiles a term. This routine is faced with a slight difficulty
@@ -566,6 +603,18 @@ func (X *CompilationEngine) CompileTerm() {
 			i, _ := strconv.Atoi(X.tokenizer.Token)
 			X.vmwriter.WritePush("CONST", i)
 		}
+		if firstType == "KEYWORD" {
+			switch X.tokenizer.KeyWord() {
+			case "true":
+				X.vmwriter.WritePush("CONST", 1)
+				X.vmwriter.WriteArithmetic("NEG")
+			case "false", "null":
+				X.vmwriter.WritePush("CONST", 0)
+			case "this":
+				X.vmwriter.WritePush("THIS", 0)
+
+			}
+		}
 		helpWrite(X.xmlFile, X.tokenizer.FormatTokenString()) // write the constant or keyword
 		X.tokenizer.Advance()
 
@@ -576,14 +625,19 @@ func (X *CompilationEngine) CompileTerm() {
 		if lookahead.Token == "[" { // varName '[' expression ']'
 			// helpWrite(X.file, X.tokenizer.FormatTokenString()) // write the varName
 			helpWrite(X.xmlFile, X.symbolTable.IdentifierToXML(X.tokenizer.Token, false))
-			//varname := X.tokenizer.Token //address 0 of the array we need to add to that
-			//addzero := X.symbolTable.IndexOf(varname)
-			//argument := X.symbolTable.TypeOf(varname) //the rest of the array has to be addressed
+
+			varname := X.tokenizer.Token //address 0 of the array we need to add to that
+			addzero := X.symbolTable.IndexOf(varname)
+			argument := X.symbolTable.TypeOf(varname) //the rest of the array has to be addressed
+			X.vmwriter.WritePush(argument, addzero)   //push the address of the 0 pointer
 			X.tokenizer.Advance()
 
 			helpWrite(X.xmlFile, X.tokenizer.FormatTokenString()) // write the '['
 			X.tokenizer.Advance()
 			X.CompileExpression()
+
+			X.vmwriter.WriteArithmetic("ADD")
+			/////////////////X.vmwriter.WritePop("TEMP", 0)
 			helpWrite(X.xmlFile, X.tokenizer.FormatTokenString()) // write the ']'
 			X.tokenizer.Advance()
 
