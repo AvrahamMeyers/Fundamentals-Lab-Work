@@ -375,12 +375,12 @@ func (X *CompilationEngine) CompileLet() {
 		//[
 		helpWrite(X.xmlFile, X.tokenizer.FormatTokenString())
 		X.tokenizer.Advance()
-		X.CompileExpression()
 
 		X.vmwriter.WritePush(kind, num) // push the base address
+		X.CompileExpression()
 
 		X.vmwriter.WriteArithmetic("ADD") // the index with the base address
-		X.vmwriter.WritePop("POINTER", 1) //SAVE X[NUMBER] TO POINTER 1
+		//X.vmwriter.WritePop("TEMP", 0)    //SAVE X[NUMBER] TO POINTER 1
 		//]
 		helpWrite(X.xmlFile, X.tokenizer.FormatTokenString())
 		X.tokenizer.Advance()
@@ -393,6 +393,9 @@ func (X *CompilationEngine) CompileLet() {
 
 	if isarray {
 		// Pop the result into the array element (that 0)
+		X.vmwriter.WritePop("TEMP", 0)
+		X.vmwriter.WritePop("POINTER", 1)
+		X.vmwriter.WritePush("TEMP", 0)
 		X.vmwriter.WritePop("THAT", 0)
 	} else {
 		X.vmwriter.WritePop(kind, num) //save the value to the appropriate location
@@ -616,6 +619,8 @@ func (X *CompilationEngine) CompileTerm() {
 				X.vmwriter.WritePush("CONST", int(str[i]))
 				X.vmwriter.WriteCall("String.appendChar", 2)
 			}
+			// X.vmwriter.WritePush("CONST", 0)
+			// X.vmwriter.WriteCall("String.appendChar", 2)
 		}
 		helpWrite(X.xmlFile, X.tokenizer.FormatTokenString()) // write the constant or keyword
 		X.tokenizer.Advance()
@@ -624,26 +629,25 @@ func (X *CompilationEngine) CompileTerm() {
 		var lookahead Tokenizer.Tokenizer = X.tokenizer
 		lookahead.Advance()
 
-		if lookahead.Token == "[" { // varName '[' expression ']'
+		if lookahead.Token == "[" { // varName '[' expression ']'  varname[ a[ b[]]]
 			// helpWrite(X.file, X.tokenizer.FormatTokenString()) // write the varName
 			helpWrite(X.xmlFile, X.symbolTable.IdentifierToXML(X.tokenizer.Token, false))
 
-			varname := X.tokenizer.Token //address 0 of the array we need to add to that
-			addzero := X.symbolTable.IndexOf(varname)
-			argument := X.symbolTable.TypeOf(varname) //the rest of the array has to be addressed
+			varname := X.tokenizer.Token              //array name
+			addzero := X.symbolTable.IndexOf(varname) //address zero
+			argument := X.symbolTable.KindOf(varname) //type of array
 			//push the address of the 0 pointer
 			X.tokenizer.Advance()
 
 			helpWrite(X.xmlFile, X.tokenizer.FormatTokenString()) // write the '['
 			X.tokenizer.Advance()
+			X.vmwriter.WritePush(argument, addzero) //the base address
 
 			X.CompileExpression()
 
-			X.vmwriter.WritePush(argument, addzero)
-
 			X.vmwriter.WriteArithmetic("ADD")
-			X.vmwriter.WritePop("POINTER", 1)
-			X.vmwriter.WritePush("THAT", 0)
+			X.vmwriter.WritePop("POINTER", 1) //pop the location to pointer 1
+			X.vmwriter.WritePush("THAT", 0)   //push the value onto the top of the stack
 			/////////////////X.vmwriter.WritePop("TEMP", 0)
 			helpWrite(X.xmlFile, X.tokenizer.FormatTokenString()) // write the ']'
 			X.tokenizer.Advance()
