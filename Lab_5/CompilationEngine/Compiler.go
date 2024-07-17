@@ -350,22 +350,7 @@ func (X *CompilationEngine) CompileDo() {
 	helpWrite(X.xmlFile, X.tokenizer.FormatTokenString())
 	X.tokenizer.Advance()
 	helpWrite(X.xmlFile, "</doStatement>\n")
-	X.vmwriter.WritePop("temp", 0)
-}
-
-func convert_variable_kind(kind string) string {
-	switch kind {
-	case "static":
-		return "STATIC"
-	case "field":
-		return "THIS"
-	case "ARG", "NONE":
-		return "ARG"
-	case "VAR":
-		return "LOCAL"
-	default:
-		return "ERROR"
-	}
+	X.vmwriter.WritePop("TEMP", 0)
 }
 
 // Compiles a let statement.
@@ -392,7 +377,7 @@ func (X *CompilationEngine) CompileLet() {
 		X.tokenizer.Advance()
 		X.CompileExpression()
 
-		X.vmwriter.WritePush(convert_variable_kind(kind), num) // push the base address
+		X.vmwriter.WritePush(kind, num) // push the base address
 
 		X.vmwriter.WriteArithmetic("ADD") // the index with the base address
 		X.vmwriter.WritePop("POINTER", 1) //SAVE X[NUMBER] TO POINTER 1
@@ -410,7 +395,7 @@ func (X *CompilationEngine) CompileLet() {
 		// Pop the result into the array element (that 0)
 		X.vmwriter.WritePop("THAT", 0)
 	} else {
-		X.vmwriter.WritePop(convert_variable_kind(kind), num) //save the value to the appropriate location
+		X.vmwriter.WritePop(kind, num) //save the value to the appropriate location
 	}
 	//symbol ;
 	helpWrite(X.xmlFile, X.tokenizer.FormatTokenString())
@@ -562,7 +547,6 @@ func (X *CompilationEngine) CompileSubroutineCall() {
 		typeName := X.symbolTable.TypeOf(objectName)
 		index := X.symbolTable.IndexOf(objectName)
 		i += 1 // One argument for the object reference
-		kind = convert_variable_kind(kind)
 		X.vmwriter.WritePush(kind, index)
 
 		callName = typeName // The type name becomes part of the call name
@@ -665,7 +649,7 @@ func (X *CompilationEngine) CompileTerm() {
 			// helpWrite(X.file, X.tokenizer.FormatTokenString()) // write the varName
 			helpWrite(X.xmlFile, X.symbolTable.IdentifierToXML(X.tokenizer.Token, false))
 			varname := X.tokenizer.Token
-			X.vmwriter.WritePush(convert_variable_kind(X.symbolTable.KindOf(varname)), X.symbolTable.IndexOf(varname)) //push variable
+			X.vmwriter.WritePush(X.symbolTable.KindOf(varname), X.symbolTable.IndexOf(varname)) //push variable
 			X.tokenizer.Advance()
 		}
 
@@ -734,6 +718,8 @@ func convert_binary_token(token string) string {
 		return "OR"
 	case "*":
 		return "MUL"
+	case "/":
+		return "DIV"
 	default:
 		return "ERROR"
 	}
