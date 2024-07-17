@@ -30,22 +30,12 @@ TEMP)
 Index (int)
 */
 func (X *VMWriter) WritePush(segment string, index int) {
-	if segment == "CONST" {
-		X.file.WriteString("push constant " + fmt.Sprint(index) + "\n")
-	} else if segment == "ARG" {
-		X.file.WriteString("push argument " + fmt.Sprint(index) + "\n")
-	} else if segment == "LOCAL" {
-		X.file.WriteString("push local " + fmt.Sprint(index) + "\n")
-	} else if segment == "STATIC" {
-		X.file.WriteString("push static " + fmt.Sprint(index) + "\n")
-	} else if segment == "THIS" {
-		X.file.WriteString("push this " + fmt.Sprint(index) + "\n")
-	} else if segment == "THAT" {
-		X.file.WriteString("push that " + fmt.Sprint(index) + "\n")
-	} else if segment == "POINTER" {
-		X.file.WriteString("push pointer " + fmt.Sprint(index) + "\n")
-	} else if segment == "TEMP" {
-		X.file.WriteString("push temp " + fmt.Sprint(index) + "\n")
+	segment = convert_kind_to_segment(segment)
+
+	segment = convert_segment_to_vm(segment)
+
+	if segment != "ERROR" {
+		X.file.WriteString("push " + segment + " " + fmt.Sprint(index) + "\n")
 	}
 }
 
@@ -60,42 +50,35 @@ TEMP)
 Index (int)
 */
 func (X *VMWriter) WritePop(segment string, index int) {
-	if segment == "CONST" {
-		X.file.WriteString("pop constant " + fmt.Sprint(index) + "\n")
-	} else if segment == "ARG" {
-		X.file.WriteString("pop argument " + fmt.Sprint(index) + "\n")
-	} else if segment == "LOCAL" {
-		X.file.WriteString("pop local " + fmt.Sprint(index) + "\n")
-	} else if segment == "STATIC" {
-		X.file.WriteString("pop static " + fmt.Sprint(index) + "\n")
-	} else if segment == "THIS" {
-		X.file.WriteString("pop this " + fmt.Sprint(index) + "\n")
-	} else if segment == "THAT" {
-		X.file.WriteString("pop that " + fmt.Sprint(index) + "\n")
-	} else if segment == "POINTER" {
-		X.file.WriteString("pop pointer " + fmt.Sprint(index) + "\n")
-	} else if segment == "TEMP" {
-		X.file.WriteString("pop temp " + fmt.Sprint(index) + "\n")
+	segment = convert_kind_to_segment(segment)
+
+	segment = convert_segment_to_vm(segment)
+
+	if segment != "ERROR" {
+		X.file.WriteString("pop " + segment + " " + fmt.Sprint(index) + "\n")
 	}
 }
 
-func (X *VMWriter) WritePoparray(segment string, index int) {
-	if segment == "CONST" {
-		X.file.WriteString("pop constant " + fmt.Sprint(index) + "\n")
-	} else if segment == "ARG" {
-		X.file.WriteString("pop argument " + fmt.Sprint(index) + "\n")
-	} else if segment == "LOCAL" {
-		X.file.WriteString("pop local " + fmt.Sprint(index) + "\n")
-	} else if segment == "STATIC" {
-		X.file.WriteString("pop static " + fmt.Sprint(index) + "\n")
-	} else if segment == "THIS" {
-		X.file.WriteString("pop this " + fmt.Sprint(index) + "\n")
-	} else if segment == "THAT" {
-		X.file.WriteString("pop that " + fmt.Sprint(index) + "\n")
-	} else if segment == "POINTER" {
-		X.file.WriteString("pop pointer " + fmt.Sprint(index) + "\n")
-	} else if segment == "TEMP" {
-		X.file.WriteString("pop temp " + fmt.Sprint(index) + "\n")
+func convert_segment_to_vm(segment string) string {
+	switch segment {
+	case "CONST":
+		return "constant"
+	case "ARG":
+		return "argument"
+	case "LOCAL":
+		return "local"
+	case "STATIC":
+		return "static"
+	case "THIS":
+		return "this"
+	case "THAT":
+		return "that"
+	case "POINTER":
+		return "pointer"
+	case "TEMP":
+		return "temp"
+	default:
+		return "ERROR"
 	}
 }
 
@@ -108,26 +91,29 @@ SUB, NEG, EQ, GT,
 LT, AND, OR, NOT)
 */
 func (X *VMWriter) WriteArithmetic(command string) {
-	if command == "ADD" {
+	switch command {
+	case "ADD":
 		X.file.WriteString("add\n")
-	} else if command == "MUL" {
-		X.file.WriteString("call Math.multiply 2\n")
-	} else if command == "SUB" {
+	case "SUB":
 		X.file.WriteString("sub\n")
-	} else if command == "NEG" {
+	case "NEG":
 		X.file.WriteString("neg\n")
-	} else if command == "EQ" {
+	case "EQ":
 		X.file.WriteString("eq\n")
-	} else if command == "GT" {
+	case "GT":
 		X.file.WriteString("gt\n")
-	} else if command == "LT" {
+	case "LT":
 		X.file.WriteString("lt\n")
-	} else if command == "AND" {
+	case "AND":
 		X.file.WriteString("and\n")
-	} else if command == "OR" {
+	case "OR":
 		X.file.WriteString("or\n")
-	} else if command == "NOT" {
+	case "NOT":
 		X.file.WriteString("not\n")
+	case "MUL":
+		X.file.WriteString("call Math.multiply 2\n")
+	case "DIV":
+		X.file.WriteString("call Math.divide 2\n")
 	}
 }
 
@@ -189,4 +175,19 @@ Closes the output file.
 */
 func (X *VMWriter) Close() {
 	X.file.Close()
+}
+
+func convert_kind_to_segment(kind string) string {
+	switch kind {
+	case "CONST", "ARG", "LOCAL", "STATIC", "THIS", "THAT", "POINTER", "TEMP":
+		return kind
+	case "field":
+		return "THIS"
+	case "VAR":
+		return "LOCAL"
+	case "static":
+		return "STATIC"
+	default:
+		return "ERROR"
+	}
 }
