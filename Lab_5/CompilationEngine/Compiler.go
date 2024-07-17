@@ -614,8 +614,7 @@ func (X *CompilationEngine) CompileTerm() {
 		if firstType == "INT_CONST" {
 			i, _ := strconv.Atoi(X.tokenizer.Token)
 			X.vmwriter.WritePush("CONST", i)
-		}
-		if firstType == "KEYWORD" {
+		} else if firstType == "KEYWORD" {
 			switch X.tokenizer.KeyWord() {
 			case "true":
 				X.vmwriter.WritePush("CONST", 1)
@@ -624,7 +623,14 @@ func (X *CompilationEngine) CompileTerm() {
 				X.vmwriter.WritePush("CONST", 0)
 			case "this":
 				X.vmwriter.WritePush("POINTER", 0)
-
+			}
+		} else if firstType == "STRING_CONST" {
+			str := X.tokenizer.Token
+			X.vmwriter.WritePush("CONST", len(str))
+			X.vmwriter.WriteCall("String.new", 1)
+			for i := 0; i < len(str); i++ {
+				X.vmwriter.WritePush("CONST", int(str[i]))
+				X.vmwriter.WriteCall("String.appendChar", 2)
 			}
 		}
 		helpWrite(X.xmlFile, X.tokenizer.FormatTokenString()) // write the constant or keyword
